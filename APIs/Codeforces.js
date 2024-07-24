@@ -2,7 +2,7 @@ const express = require('express');
 const codeforcesApp = express.Router();
 const Bottleneck = require('bottleneck');
 const fetch = (...args) =>
-  import('node-fetch').then(({ default: fetch }) => fetch(...args));
+    import('node-fetch').then(({ default: fetch }) => fetch(...args));
 
 // Create a Bottleneck limiter
 const limiter = new Bottleneck({
@@ -13,7 +13,15 @@ const limiter = new Bottleneck({
 // Function to fetch user data from Codeforces
 async function fetchCodeforcesData(username) {
     try {
-        let response = await fetch(`https://codeforces.com/api/user.rating?handle=${username}`);
+        let response = await fetch(`https://codeforces.com/api/user.rating?handle=${username}`, {
+            headers: {
+                'Content-Type': 'application/json',
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+                'Accept': 'application/json',
+                'Referer': 'https://leetcode.com/',
+                'Origin': 'https://leetcode.com'
+            }
+        });
         if (response.status === 429 || response.status === 503) {
             console.log(`Rate limit or service unavailable for Codeforces ${username}.`);
             await delay(2000); // Fixed delay before retrying

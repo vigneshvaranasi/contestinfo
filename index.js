@@ -15,7 +15,7 @@ const { router: leetcodeRouter, fetchLeetCodeData } = require('./APIs/Leetcode')
 app.use('/leetcode', leetcodeRouter);
 
 // Import students data
-const students = require('./students.json');
+const students = require('./test.json');
 
 // Endpoint to fetch all students' data from multiple platforms
 app.get('/data', async (req, res) => {
@@ -47,10 +47,6 @@ app.get('/data', async (req, res) => {
     }
 });
 
-// Import Leetcode API
-const leetcodeApp = require('./APIs/Leetcode:username');
-// If path starts with /leetcode-api, then leetcodeAPI will be called
-app.use('/leetcode', leetcodeApp);
 
 // Assign Port Number to Server
 const port = 4000;
