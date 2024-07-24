@@ -19,8 +19,6 @@ const scrapeSPOJ = async (username) => {
             const columns = row.querySelectorAll('td');
 
             if (columns[3].textContent.trim() == 'accepted') {
-                
-                
                 return {
                     date: columns[1].textContent.trim().split(' ')[0],
                     problem: columns[2].textContent.trim()
