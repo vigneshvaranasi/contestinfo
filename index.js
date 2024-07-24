@@ -16,6 +16,11 @@ const codeforcesApp = require('./APIs/Codeforces:username');
 app.use('/codeforces', codeforcesApp);
 
 
+// Import Leetcode API
+const leetcodeApp = require('./APIs/Leetcode:username');
+// If path starts with /leetcode-api, then leetcodeAPI will be called
+app.use('/leetcode', leetcodeApp);
+
 // Assign Port Number to Server
 const port = 4000;
 app.listen(port, () => {

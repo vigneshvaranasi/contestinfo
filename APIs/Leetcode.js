@@ -55,3 +55,4 @@ const fetchLeetCodeData = async (username) => {
     return data;
 };
 const fetchLeetCodeDataWithLimit = limiter.wrap(fetchLeetCodeData);
+module.exports = fetchLeetCodeDataWithLimit;
