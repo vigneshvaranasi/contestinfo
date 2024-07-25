@@ -15,8 +15,8 @@ const { router: leetcodeRouter, fetchLeetCodeData } = require('./APIs/Leetcode')
 app.use('/leetcode', leetcodeRouter);
 
 // Import Codechef API
-const { router: codechefRouter, fetchCodeChefData } = require('./APIs/Codechef');
-app.use('/codechef', codechefRouter);
+// const { router: codechefRouter, fetchCodeChefData } = require('./APIs/Codechef');
+// app.use('/codechef', codechefRouter);
 
 // Import students data
 const students = require('./Students.json');
@@ -28,7 +28,8 @@ app.get('/data', async (req, res) => {
         const promises = students.map(async student => {
 
             //  fetch if the username is available
-            if (student.codeforces === "" || student.leetcode === "" || student.codechef === "") {
+            // if (student.codeforces === "" || student.leetcode === "" || student.codechef === "") {
+            if (student.codeforces === "" || student.leetcode === "" ) {
                 return {
                     roll: student.roll,
                     error: 'Username not available',
@@ -36,12 +37,12 @@ app.get('/data', async (req, res) => {
             }
             const codeforcesData = await fetchCodeforcesData(student.codeforces);
             const leetcodeData = await fetchLeetCodeData(student.leetcode);
-            const codechefData = await fetchCodeChefData(student.codechef);
+            // const codechefData = await fetchCodeChefData(student.codechef);
             return {
                 roll: student.roll,
                 codeforces: codeforcesData,
                 leetcode: leetcodeData,
-                codechef: codechefData,
+                // codechef: codechefData,
             };
         });
         // Wait for all promises to resolve
