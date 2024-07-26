@@ -5,7 +5,7 @@ const { MongoClient } = require('mongodb');
 
 
 const dbURL = process.env.DB_URL; // Use environment variable
-const client = new MongoClient(dbURL, { useNewUrlParser: true, useUnifiedTopology: true });
+const client = new MongoClient(dbURL);
 
 async function startServer() {
     try {
