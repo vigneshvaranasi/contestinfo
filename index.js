@@ -1,12 +1,12 @@
+require('dotenv').config();
 const express = require('express');
 const app = express();
 const { MongoClient } = require('mongodb');
 
-// Database URL and Client Initialization
-const dbURL = 'mongodb+srv://vignesh:vignesh@cluster1.qt05vl9.mongodb.net';
-const client = new MongoClient(dbURL);
 
-// Connect to MongoDB and setup server
+const dbURL = process.env.DB_URL; // Use environment variable
+const client = new MongoClient(dbURL, { useNewUrlParser: true, useUnifiedTopology: true });
+
 async function startServer() {
     try {
         // Connect to MongoDB
@@ -14,7 +14,7 @@ async function startServer() {
         console.log('Connected to MongoDB');
 
         // Connect to Database and Collection
-        const db = client.db('ContestInfo');
+        const db = client.db('ContestInfos');
         const studentsCollection = db.collection('Students');
 
         // Share the Collection with the APIs
@@ -59,7 +59,7 @@ async function startServer() {
                     };
 
                     // Insert user data into MongoDB
-                    const studentsCollection = app.get('studentsCollection');
+                    // const studentsCollection = app.get('studentsCollection');
                     await studentsCollection.updateOne(
                         { roll: student.roll },
                         { $set: userData },
@@ -73,12 +73,12 @@ async function startServer() {
                 const allStudentsData = await Promise.all(promises);
                 res.json(allStudentsData);
             } catch (error) {
+                console.error(error);
                 res.status(500).json({ error: error.message });
             }
         });
 
-        // Assign Port Number to Server
-        const port = 4000;
+        const port = process.env.PORT || 4000;
         app.listen(port, () => {
             console.log(`Server running on port http://localhost:${port}`);
         });

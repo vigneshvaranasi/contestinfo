@@ -12,6 +12,7 @@ tmp
 dist
 dist-ssr
 *.local
+.env
 
 
 
