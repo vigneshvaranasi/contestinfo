@@ -14,7 +14,7 @@ async function startServer() {
         console.log('Connected to MongoDB');
 
         // Connect to Database and Collection
-        const db = client.db('ContestInfos');
+        const db = client.db('ContestInfo');
         const studentsCollection = db.collection('Students');
 
         // Share the Collection with the APIs
