@@ -35,7 +35,7 @@ async function startServer() {
 
 
         // Import students data
-        const students = require('./Students.json');
+        const students = require('./test.json');
 
         // Endpoint to fetch all students' data and insert into MongoDB
         app.get('/data', async (req, res) => {
@@ -63,7 +63,8 @@ async function startServer() {
                     await studentsCollection.updateOne(
                         { roll: student.roll },
                         { $set: userData },
-                        { upsert: true }
+                        { upsert: true },
+                        {sort : {roll: 1}}
                     );
 
                     return userData;
