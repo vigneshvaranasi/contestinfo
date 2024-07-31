@@ -53,6 +53,7 @@ async function startServer() {
 
                     // Prepare data for MongoDB
                     const userData = {
+                        name: student.name,
                         roll: student.roll,
                         codeforces: codeforcesData,
                         leetcode: leetcodeData,
