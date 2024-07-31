@@ -61,6 +61,9 @@ async function fetchLeetCodeData(username) {
         const data = await response.json();
         if (data.data && data.data.userContestRankingHistory) {
             data.data.userContestRankingHistory = data.data.userContestRankingHistory.filter(contest => contest.attended);
+
+            // Reverse the array to get the latest contests
+            data.data.userContestRankingHistory.reverse();
         }
 
         return { username, data: data.data };

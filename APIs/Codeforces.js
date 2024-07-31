@@ -6,7 +6,7 @@ const fetch = (...args) =>
 
 // Create a Bottleneck limiter
 const limiter = new Bottleneck({
-    minTime: 300, // Minimum time between requests
+    minTime: 1000, // Minimum time between requests
     maxConcurrent: 3 // Maximum number of concurrent requests
 });
 
@@ -18,11 +18,12 @@ async function fetchCodeforcesData(username) {
                 'Content-Type': 'application/json',
                 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
                 'Accept': 'application/json',
-                'Referer': 'https://leetcode.com/',
-                'Origin': 'https://leetcode.com'
+                'Referer': 'https://codeforces.com/',
+                'Origin': 'https://codeforces.com'
             }
         });
-        if (response.status === 429 || response.status === 503) {
+        // if (response.status === 429 || response.status === 503 || response.status === 504 || response.status === 403) {
+        if (response.status!==200) {
             console.log(`Rate limit or service unavailable for Codeforces ${username}.`);
             await delay(2000); // Fixed delay before retrying
             return fetchCodeforcesData(username); // Retry once
