@@ -14,7 +14,7 @@ async function startServer() {
         console.log('Connected to MongoDB');
 
         // Connect to Database and Collection
-        const db = client.db('ContestInfo');
+        const db = client.db('ContestInfos');
         const studentsCollection = db.collection('Students');
 
         // Share the Collection with the APIs
@@ -74,6 +74,7 @@ async function startServer() {
                 // Wait for all promises to resolve
                 const allStudentsData = await Promise.all(promises);
                 res.json(allStudentsData);
+                return allStudentsData;
             } catch (error) {
                 console.error(error);
                 res.status(500).json({ error: error.message });
