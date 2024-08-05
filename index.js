@@ -33,6 +33,10 @@ async function startServer() {
         const { router: leetcodeRouter, fetchLeetCodeData } = require('./APIs/Leetcode');
         app.use('/leetcode', leetcodeRouter);
 
+        // Import and use CodeChef API
+        const { router: codechefRouter, scrapeCodeChef } = require('./APIs/Codechef');
+        app.use('/codechef', codechefRouter);
+
 
         // Import students data
         const students = require('./test.json');
@@ -42,7 +46,7 @@ async function startServer() {
             try {
                 // Collect data from different platforms
                 const promises = students.map(async student => {
-                    if (student.codeforces === "" || student.leetcode === "") {
+                    if (student.codeforces === "" || student.leetcode === ""  || student.codechef === "") {
                         return {
                             roll: student.roll,
                             error: 'Username not available',
@@ -50,6 +54,7 @@ async function startServer() {
                     }
                     const codeforcesData = await fetchCodeforcesData(student.codeforces);
                     const leetcodeData = await fetchLeetCodeData(student.leetcode);
+                    const codechefData = await scrapeCodeChef(student.codechef);
 
                     // Prepare data for MongoDB
                     const userData = {
@@ -57,6 +62,7 @@ async function startServer() {
                         roll: student.roll,
                         codeforces: codeforcesData,
                         leetcode: leetcodeData,
+                        codechef: codechefData,
                     };
 
                     // Insert user data into MongoDB

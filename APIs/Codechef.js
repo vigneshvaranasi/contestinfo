@@ -1,109 +1,156 @@
 const express = require('express');
+const cheerio = require('cheerio');
 const codechefApp = express.Router();
-const puppeteer = require('puppeteer');
-const jsdom = require('jsdom');
-const { JSDOM } = jsdom;
+const Bottleneck = require('bottleneck');
+const fetch = (...args) =>
+    import('node-fetch').then(({ default: fetch }) => fetch(...args));
 
-const divMap = {
-    1: 'A',
-    2: 'B',
-    3: 'C',
-    4: 'D'
-};
+// Create a Bottleneck limiter
+const limiter = new Bottleneck({
+    minTime: 10000, // Minimum time between requests
+    maxConcurrent: 3 // Maximum number of concurrent requests
+});
 
-// Launch the browser with Puppeteer
-const launchBrowser = async () => {
+const scrapeCodeChef = async (username) => {
     try {
-        const browser = await puppeteer.launch({
-            headless: true,
-            args: [
-                '--no-sandbox',
-                '--disable-setuid-sandbox',
-                '--disable-dev-shm-usage',
-                '--disable-gpu',
-                '--disable-software-rasterizer',
-                '--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
-            ],
-        });
-        console.log('Browser launched successfully');
-        return browser;
-    } catch (error) {
-        console.error('Error launching browser:', error);
-        throw error;
-    }
-};
-
-// Scrape CodeChef data
-const fetchCodeChefData = async (username) => {
-    let browser;
-    try {
-        browser = await launchBrowser();
-        const page = await browser.newPage();
-        await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36');
-        await page.goto(`https://www.codechef.com/users/${username}`, { waitUntil: 'networkidle2' });
-        console.log(`Navigated to https://www.codechef.com/users/${username}`);
-
-        // Get page content
-        const pageContent = await page.content();
-
-        // Parse page content with jsdom
-        const dom = new JSDOM(pageContent);
-        const document = dom.window.document;
-
-        // Extract contest data
-        const contests = Array.from(document.querySelectorAll('section.rating-data-section.problems-solved')).map(section => {
-            const contestTitles = Array.from(section.querySelectorAll('.content > h5')).map(h5 => h5.textContent);
-            const solvedProblems = Array.from(section.querySelectorAll('.content > p')).map(p => p.textContent);
-            return contestTitles.map((title, index) => {
-                const contest = title.split(' Division')[0];
-                const divisionNumber = parseInt(title.split('Division ')[1]?.split(' ')[0] || '0');
-                const division = divMap[divisionNumber] || 'Unknown';
-                const problems = solvedProblems[index]?.split(',').length || 0;
-                return { contest, problems, division , divisionNumber };
+        let res = await limiter.schedule(()=>
+            fetch(`https://www.codechef.com/users/${username}`, {
+                method: 'GET',
+                headers: {
+                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+                    'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+                    'Referer': 'https://www.codechef.com/',
+                    'Connection': 'keep-alive',
+                    'Upgrade-Insecure-Requests': '1'
+                }
+            })
+        );
+            
+        // Set timeout
+        // setTimeout(()=>{
+            
+        // },200)
+        const html = await res.text();
+        const allRatingIndex = html.indexOf('var all_rating =');
+        const endPoint = html.indexOf(';',allRatingIndex);
+        let jsonString = html.substring(allRatingIndex + 16, endPoint);
+        console.log(jsonString)
+        let allRating = JSON.parse(jsonString);
+        
+        const $ = cheerio.load(html);
+        const contentData = [];
+        $('div.content').each((index, element) => {
+            const name = $(element).find('h5 > span').html();
+            const problems = [];
+            
+            $(element).find('p > span > span').each((i, el) => {
+                problems.push($(el).html());
             });
-        }).flat();
-
-        // Extract rating data using jsdom
-        const resdata = await fetch(`https://www.codechef.com/users/${username}`);
-        let d = await resdata.text();
-        let data = { data: d };
-        let allRating =
-            data.data.search("var all_rating = ") + "var all_rating = ".length;
-        let allRating2 = data.data.search("var current_user_rating =") - 6;
-        let ratingData = JSON.parse(data.data.substring(allRating, allRating2));
-        const result = contests.map(contest => {
-            const rating = ratingData.find(r => r.code === `START${contest.contest.replace('Starters ', '')}D`);
-            return {
-                ...contest,
-                ratingData: rating || {}
-            };
+            if(name != null && name.split(" ")[0] == "Starters" ){
+                contentData.push({
+                    name: name,
+                    code: name.split(' ')[1],
+                    problems: problems,
+                    noOfProblems: problems.length
+                });
+            }
         });
-
-        await browser.close();
-        return result;
-
-        // await browser.close();
-        // return { contests, ratingData };
-    } catch (error) {
-        console.error('Error fetching data from CodeChef:', error);
-        if (browser) await browser.close();
-        throw new Error('Failed to fetch data from CodeChef');
+        let dataofSolvedProblems = contentData;
+        let newAllRating = allRating.map((rating)=>{
+            if(rating.name.split(' ')[0] =='Starters'){
+                // console.log(rating.name)
+                let details = dataofSolvedProblems.find((data)=>data.name == rating.name);
+                if(details != undefined ){
+                    return {
+                        ...rating,
+                        problemsSolved : details.problems,
+                        noOfProblems: details.noOfProblems
+                    }
+                }
+            }
+        })
+        return newAllRating;
+    }catch(err){
+        console.log(err);
     }
+    
 };
+// Returns the all_rating object of the user
+const getAllRating= async(username)=>{
+    try{
+        let res = await fetch(`https://www.codechef.com/users/${username}`);
+        const text = await res.text();
+        const allRatingIndex = text.indexOf('var all_rating =');
+        const endPoint = text.indexOf(';',allRatingIndex);
+        // console.log(text.substring(allRatingIndex+16,endPoint));
+        return JSON.parse(text.substring(allRatingIndex+16,endPoint));
+    }catch(err){
+        console.log(err);
+    }
+}
+// Returns the Data of Contests of the user 
+const getDataofContests = async (username) => {
+    try {
+        let res = await fetch(`https://www.codechef.com/users/${username}`);
+        const html = await res.text();
+        
+        const $ = cheerio.load(html);
+        const contentData = [];
+        $('div.content').each((index, element) => {
+            const name = $(element).find('h5 > span').html();
+            const problems = [];
+            
+            $(element).find('p > span > span').each((i, el) => {
+                problems.push($(el).html());
+            });
+            if(name != null && name.split(" ")[0] == "Starters" ){
+                contentData.push({
+                    name: name,
+                    code: name.split(' ')[1],
+                    problems: problems,
+                    noOfProblems: problems.length
+                });
+            }
+        });
+        return contentData;
+    }catch(err){
+        console.log(err);
+    }
+}
 
 // Define the /codechef endpoint
 codechefApp.get('/codechef/:username', async (req, res) => {
     const username = req.params.username;
     try {
-        const data = await fetchCodeChefData(username);
+        const data = await scrapeCodeChef(username);
         res.json(data);
     } catch (error) {
-        console.error('Error in /codechef endpoint:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+codechefApp.get('/codechef/:username/rating', async (req, res) => {
+    const username = req.params.username;
+    try {
+        const data = await getAllRating(username);
+        res.json(data);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+
+codechefApp.get('/codechef/:username/contests', async (req, res) => {
+    const username = req.params.username;
+    try {
+        const data = await getDataofContests(username);
+        res.json(data);
+    } catch (error) {
         res.status(500).json({ error: error.message });
     }
 });
 
 module.exports = {
     router: codechefApp,
-    fetchCodeChefData
+    scrapeCodeChef
 };
