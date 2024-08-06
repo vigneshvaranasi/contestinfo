@@ -69,7 +69,7 @@ const scrapeCodeChef = async (username) => {
                 }
             }
         })
-        return newAllRating;
+        return {newAllRating,username};
     }catch(err){
         console.log(err);
     }
