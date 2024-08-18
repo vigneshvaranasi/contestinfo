@@ -89,7 +89,7 @@ async function startServer() {
         });
 
         // Schedule the cron job to run at 12:30 PM everyday
-        cron.schedule('30 12 * * *', async () => {
+        cron.schedule('40 12 * * *', async () => {
             console.log('Running cron job');
             try{
                 const studentsData = await app.get('/data');
