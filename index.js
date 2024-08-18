@@ -2,6 +2,7 @@ require('dotenv').config();
 const express = require('express');
 const app = express();
 const { MongoClient } = require('mongodb');
+const cron = require('node-cron');
 
 
 const dbURL = process.env.DB_URL; // Use environment variable
@@ -85,6 +86,19 @@ async function startServer() {
                 console.error(error);
                 res.status(500).json({ error: error.message });
             }
+        });
+
+        // Schedule the cron job to run at 12:30 PM everyday
+        cron.schedule('30 12 * * *', async () => {
+            console.log('Running cron job');
+            try{
+                const studentsData = await app.get('/data');
+                console.log('Data endpoint triggered successfully:', studentsData);
+            }
+            catch(error){
+                console.error('Error triggering /data endpoint:', error);
+            }
+
         });
 
         const port = process.env.PORT || 4000;
