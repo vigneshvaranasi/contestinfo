@@ -3,6 +3,7 @@ const express = require('express');
 const app = express();
 const { MongoClient } = require('mongodb');
 const cron = require('node-cron');
+const https = require('https');
 
 
 const dbURL = process.env.DB_URL; // Use environment variable
@@ -47,7 +48,7 @@ async function startServer() {
             try {
                 // Collect data from different platforms
                 const promises = students.map(async student => {
-                    if (student.codeforces === "" || student.leetcode === ""  || student.codechef === "") {
+                    if (student.codeforces === "" || student.leetcode === "" || student.codechef === "") {
                         return {
                             roll: student.roll,
                             error: 'Username not available',
@@ -72,7 +73,7 @@ async function startServer() {
                         { roll: student.roll },
                         { $set: userData },
                         { upsert: true },
-                        {sort : {roll: 1}}
+                        { sort: { roll: 1 } }
                     );
 
                     return userData;
@@ -88,17 +89,48 @@ async function startServer() {
             }
         });
 
-        // Schedule the cron job to run at 12:30 PM everyday
-        cron.schedule('40 12 * * *', async () => {
-            console.log('Running cron job');
-            try{
-                const studentsData = await app.get('/data');
-                console.log('Data endpoint triggered successfully:', studentsData);
-            }
-            catch(error){
-                console.error('Error triggering /data endpoint:', error);
-            }
+        // Schedule a cron job to wake up the server at 12:00 AM every day
+        cron.schedule('59 13 * * *', () => {
+            console.log('Running cron job at 13:29 AM to wake up the server');
 
+            const url = 'https://contestinfo-m59t.onrender.com/';
+
+            https.get(url, (res) => {
+                let data = '';
+
+                res.on('data', (chunk) => {
+                    data += chunk;
+                });
+
+                res.on('end', () => {
+                    console.log('Server wake-up request completed successfully:', data);
+                });
+
+            }).on('error', (error) => {
+                console.error('Error waking up the server:', error);
+            });
+        });
+
+        // Schedule another cron job to trigger the /data endpoint at 12:45 PM every day
+        cron.schedule('0 14 * * *', () => {
+            console.log('Running cron job at 13:30 PM to trigger /data endpoint');
+
+            const url = 'https://contestinfo-m59t.onrender.com/data';
+
+            https.get(url, (res) => {
+                let data = '';
+
+                res.on('data', (chunk) => {
+                    data += chunk;
+                });
+
+                res.on('end', () => {
+                    console.log('Data endpoint triggered successfully:', data);
+                });
+
+            }).on('error', (error) => {
+                console.error('Error triggering /data endpoint:', error);
+            });
         });
 
         const port = process.env.PORT || 4000;
