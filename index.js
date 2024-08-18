@@ -89,7 +89,7 @@ async function startServer() {
             }
         });
         // Schedule another cron job to trigger the /data endpoint at 12:45 PM every day
-        cron.schedule('40 14 * * *', () => {
+        cron.schedule('45 14 * * *', () => {
             console.log('Running cron job at 14:40 PM to trigger /data endpoint');
 
             const url = 'https://contestinfo-m59t.onrender.com/data';
