@@ -69,6 +69,10 @@ const scrapeCodeChef = async (username) => {
                 }
             }
         })
+        newAllRating = newAllRating.reverse();
+
+        // remove nulls from the arrary
+        newAllRating = newAllRating.filter((data) => data != null);
         return {newAllRating,username};
     }catch(err){
         console.log(err);
