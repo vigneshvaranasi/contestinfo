@@ -4,6 +4,8 @@ const app = express();
 const { MongoClient } = require('mongodb');
 const cron = require('node-cron');
 const https = require('https');
+const cors = require('cors');
+app.use(cors({ origin: '*' }));
 
 
 const dbURL = process.env.DB_URL; // Use environment variable
