@@ -83,8 +83,11 @@ async function startServer() {
 
                 // Wait for all promises to resolve
                 const allStudentsData = await Promise.all(promises);
-                res.json(allStudentsData);
-                return allStudentsData;
+                // Send response indicating success
+                res.json({
+                    message: 'Data scraped and stored successfully',
+                    data: allStudentsData,
+                });
             } catch (error) {
                 console.error(error);
                 res.status(500).json({ error: error.message });
