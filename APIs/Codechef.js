@@ -34,6 +34,7 @@ const scrapeCodeChef = async (username) => {
         const allRatingIndex = html.indexOf('var all_rating =');
         const endPoint = html.indexOf(';',allRatingIndex);
         let jsonString = html.substring(allRatingIndex + 16, endPoint);
+        console.log(username)
         console.log(jsonString)
         let allRating = JSON.parse(jsonString);
         
