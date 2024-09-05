@@ -2,7 +2,7 @@ name: Ping Backend Daily
 
 on:
   schedule:
-    - cron: '35 1 * * *'  # This triggers the action daily at 1:30 AM UTC, which is 7:00 AM IST
+    - cron: '30 18 * * *'  # This triggers the action daily at 6:30 PM UTC, which is 12:00 AM IST
 
 jobs:
   ping-backend:
