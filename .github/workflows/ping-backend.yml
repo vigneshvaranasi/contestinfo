@@ -1,0 +1,13 @@
+name: Ping Backend Daily
+
+on:
+  schedule:
+    - cron: '30 1 * * *'  # This triggers the action daily at 1:30 AM UTC, which is 7:00 AM IST
+
+jobs:
+  ping-backend:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Send HTTP request to backend
+        run: |
+          curl -X GET https://contestinfo-m59t.onrender.com/data
