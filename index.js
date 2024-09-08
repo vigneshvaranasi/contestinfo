@@ -41,6 +41,35 @@ async function startServer() {
         const { router: codechefRouter, scrapeCodeChef } = require('./APIs/Codechef');
         app.use('/codechef', codechefRouter);
 
+        // Import GetUpcoming API
+        const { router: getUpcomingRouter, fetchUpcoming } = require('./APIs/GetUpcoming');
+        app.use('/getUpcoming', getUpcomingRouter);
+
+        app.get('/getUpcomingContests', async (req, res) => {
+            try {
+                const newUpcomingContests = await fetchUpcoming();
+                const upcomingContestsCollection = client.db('ContestInfo').collection('UpcomingContests');
+                let upsertedCount = 0;
+                for (let contest of newUpcomingContests) {
+                    const result = await upcomingContestsCollection.updateOne(
+                        { href: contest.href },
+                        { $set: contest },
+                        { upsert: true }
+                    );
+                    if (result.upsertedCount > 0 || result.modifiedCount > 0) {
+                        upsertedCount++;
+                    }
+                }
+        
+                res.json({
+                    message: `${upsertedCount} contests added.`,
+                });
+        
+            } catch (error) {
+                console.error('Error fetching/updating contests:', error);
+                res.status(500).json({ error: 'An error occurred while fetching contests.' });
+            }
+        });        
 
         // Import students data
         const students = require('./test.json');
