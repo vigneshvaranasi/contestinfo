@@ -19,7 +19,7 @@ function getPlatform(resource) {
         'leetcode.com': 'Leetcode',
         'atcoder.jp': 'AtCoder',
         'hackerearth.com': 'HackerEarth',
-        'spoj.com': 'SPOJ'
+        // 'spoj.com': 'SPOJ'
     };
     return platformMap[resource] || 'Unknown';
 }
