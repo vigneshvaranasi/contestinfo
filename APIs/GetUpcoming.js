@@ -27,7 +27,7 @@ function getPlatform(resource) {
 
 // Function to fetch upcoming contests
 async function fetchUpcoming() {
-    const url = 'https://clist.by:443/api/v4/contest/?upcoming=true&resource_id__in=1%2C2%2C102%2C93%2C26%2C73&order_by=end';
+    const url = 'https://clist.by:443/api/v4/contest/?upcoming=true&resource_id__in=1%2C2%2C102%2C93%2C73&order_by=end';
     try {
         const response = await fetch(url, {
             headers: {
