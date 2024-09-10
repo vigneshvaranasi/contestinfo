@@ -39,6 +39,7 @@ const scrapeCodeChef = async (username) => {
         let allRating = JSON.parse(jsonString);
         
         const $ = cheerio.load(html);
+        const problemsSolved = $('section.rating-data-section.problems-solved > h3').text().trim();
         const contentData = [];
         $('div.content').each((index, element) => {
             const name = $(element).find('h5 > span').html();
@@ -74,7 +75,7 @@ const scrapeCodeChef = async (username) => {
 
         // remove nulls from the arrary
         newAllRating = newAllRating.filter((data) => data != null);
-        return {newAllRating,username};
+        return {newAllRating,username,problemsSolved};
     }catch(err){
         console.log(err);
     }

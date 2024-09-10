@@ -27,10 +27,10 @@ async function getSolved(username, contestId) {
         if (body.status !== 200) {
             console.log(`Rate limit or service unavailable for Codeforces ${username}.`);
             await delay(2000); // Fixed delay before retrying
-            return getSolved(username,contestId); // Retry once
+            return getSolved(username, contestId); // Retry once
         }
         console.log(username)
-        let solved=0;
+        let solved = 0;
         let res = await body.json();
         res.result = res.result.filter((problem) => problem.verdict == "OK");
         solved += res.result.length;
@@ -54,7 +54,7 @@ async function getTotalProblems(contestId) {
 
 
 // Function to fetch user data from Codeforces
-async function fetchCodeforcesData(username) {
+async function fetchCodeforcesContestsData(username) {
     try {
         let response = await limiter.schedule(() =>
             fetch(`https://codeforces.com/api/user.rating?handle=${username}`, {
@@ -71,7 +71,7 @@ async function fetchCodeforcesData(username) {
         if (response.status !== 200) {
             console.log(`Rate limit or service unavailable for Codeforces ${username}.`);
             await delay(2000); // Fixed delay before retrying
-            return fetchCodeforcesData(username); // Retry once
+            return fetchCodeforcesContestsData(username); // Retry once
         }
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
@@ -86,13 +86,13 @@ async function fetchCodeforcesData(username) {
                 let newContest = { ...contest }; // Create a copy of the contest object
                 newContest.problemsSolved = await getSolved(username, contest.contestId);
                 // newContest.totalProblems = await getTotalProblems(contest.contestId);
-                console.log(`Contest: ${contest.contestId}, Problems Solved: ${newContest.problemsSolved}, Total Problems: ${newContest.totalProblems}`);
+                // console.log(`Contest: ${contest.contestId}, Problems Solved: ${newContest.problemsSolved}, Total Problems: ${newContest.totalProblems}`);
                 return newContest;
             }));
-            
-            attendedContests=newAttendedContests;
-            
-            return { username, attendedContests};
+
+            attendedContests = newAttendedContests;
+
+            return { username, attendedContests };
         } else {
             throw new Error('Received non-JSON response');
         }
@@ -102,6 +102,39 @@ async function fetchCodeforcesData(username) {
     }
 }
 
+const fetchCodeforcesProblemsData = async (username) => {
+    try {
+        const url = `https://codeforces.com/api/user.status?handle=${username}`;
+        const response = await limiter.schedule(() => fetch(url), {
+            headers: {
+                'Content-Type': 'application/json',
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+                'Accept': 'application/json',
+                'Referer': 'https://codeforces.com/',
+                'Origin': 'https://codeforces.com'
+            }
+        });
+        if (response.status !== 200) {
+            console.log(`Rate limit or service unavailable for Codeforces ${username}.`);
+            await delay(2000); // Fixed delay before retrying
+            return fetchCodeforcesProblemsData(username); // Retry once
+        }
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        let data = await response.json();
+        // console.log('data: ', data);
+        if (data.status === 'FAILED') {
+            return [];
+        }
+        data = data.result.filter(submission => submission.verdict === 'OK');
+        return data;
+    } catch (error) {
+        console.error(`Failed to fetch data for ${username}:`, error);
+        return { username, error: error.message };
+    }
+};
+
 function delay(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
@@ -109,11 +142,16 @@ function delay(ms) {
 // Define a route to fetch Codeforces data
 codeforcesApp.get('/:username', async (req, res) => {
     const username = req.params.username;
-    const data = await fetchCodeforcesData(username);
-    res.json(data);
+    const data = await fetchCodeforcesContestsData(username);
+    const ProblemsData = await fetchCodeforcesProblemsData(username);
+    data.problemsData = ProblemsData;
+    res.json({
+        data: data
+    });
 });
 
 module.exports = {
     router: codeforcesApp,
-    fetchCodeforcesData
+    fetchCodeforcesContestsData,
+    fetchCodeforcesProblemsData
 };

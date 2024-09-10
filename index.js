@@ -19,10 +19,13 @@ async function startServer() {
 
         // Connect to Database and Collection
         const db = client.db('ContestInfo');
-        const studentsCollection = db.collection('Students');
+        const Batch21 = db.collection('Batch21');
+        const Batch22 = db.collection('Batch22');
+
 
         // Share the Collection with the APIs
-        app.set('studentsCollection', studentsCollection);
+        app.set('Batch21', Batch21);
+        app.set('Batch22', Batch22);
 
         // Endpoint to welcome users
         app.get('/', (req, res) => {
@@ -30,7 +33,7 @@ async function startServer() {
         });
 
         // Import and use Codeforces API
-        const { router: codeforcesRouter, fetchCodeforcesData } = require('./APIs/Codeforces');
+        const { router: codeforcesRouter, fetchCodeforcesContestsData, fetchCodeforcesProblemsData } = require('./APIs/Codeforces');
         app.use('/codeforces', codeforcesRouter);
 
         // Import and use LeetCode API
@@ -60,19 +63,67 @@ async function startServer() {
                         upsertedCount++;
                     }
                 }
-        
+
                 res.json({
                     message: `${upsertedCount} contests added.`,
                 });
-        
+
             } catch (error) {
                 console.error('Error fetching/updating contests:', error);
                 res.status(500).json({ error: 'An error occurred while fetching contests.' });
             }
-        });        
+        });
 
         // Import students data
-        const students = require('./test.json');
+        const students21 = require('./21.json');
+        const students22 = require('./22.json');
+
+        // Function to Push data to the DB t differnt collections
+        async function pushDataToDB(batch, collection,res) {
+
+            // Collect data from different platforms
+            const promises = batch.map(async student => {
+                if (student.codeforces === "" || student.leetcode === "" || student.codechef === "") {
+                    return {
+                        roll: student.roll,
+                        error: 'Username not available',
+                    };
+                }
+                // let data = await fetchCodeforcesContestsData(student.codeforces);
+                // let problems = await fetchCodeforcesProblemsData(student.codeforces);
+                // data.problems = await problems;
+                // const codeforcesData = data;
+                const leetcodeData = await fetchLeetCodeData(student.leetcode);
+                const codechefData = await scrapeCodeChef(student.codechef);
+
+                // Prepare data for MongoDB
+                const userData = {
+                    name: student.name,
+                    roll: student.roll,
+                    // codeforces: codeforcesData,
+                    leetcode: leetcodeData,
+                    codechef: codechefData,
+                };
+
+                // Insert user data into MongoDB
+                const studentsCollection = app.get(collection);
+                await studentsCollection.updateOne(
+                    { roll: student.roll },
+                    { $set: userData },
+                    { upsert: true }
+                );
+
+                return userData;
+            });
+
+            // Wait for all promises to resolve
+            const allStudentsData = await Promise.all(promises);
+            // Send response indicating success
+            res.json({
+                message: 'Data scraped and stored successfully',
+                data: allStudentsData,
+            });
+        }
 
         // Endpoint to fetch all students' data and insert into MongoDB
         app.get('/data', async (req, res) => {
@@ -85,7 +136,10 @@ async function startServer() {
                             error: 'Username not available',
                         };
                     }
-                    const codeforcesData = await fetchCodeforcesData(student.codeforces);
+                    let data = await fetchCodeforcesContestsData(student.codeforces);
+                    let problems = await fetchCodeforcesProblemsData(student.codeforces);
+                    data.problems = await problems;
+                    const codeforcesData = data;
                     const leetcodeData = await fetchLeetCodeData(student.leetcode);
                     const codechefData = await scrapeCodeChef(student.codechef);
 
@@ -99,7 +153,7 @@ async function startServer() {
                     };
 
                     // Insert user data into MongoDB
-                    // const studentsCollection = app.get('studentsCollection');
+                    const studentsCollection = app.get('studentsCollection');
                     await studentsCollection.updateOne(
                         { roll: student.roll },
                         { $set: userData },
@@ -122,26 +176,10 @@ async function startServer() {
                 res.status(500).json({ error: error.message });
             }
         });
-        // Schedule another cron job to trigger the /data endpoint at 12:45 PM every day
-        cron.schedule('45 14 * * *', () => {
-            console.log('Running cron job at 14:40 PM to trigger /data endpoint');
 
-            const url = 'https://contestinfo-m59t.onrender.com/data';
-
-            https.get(url, (res) => {
-                let data = '';
-
-                res.on('data', (chunk) => {
-                    data += chunk;
-                });
-
-                res.on('end', () => {
-                    console.log('Data endpoint triggered successfully:', data);
-                });
-
-            }).on('error', (error) => {
-                console.error('Error triggering /data endpoint:', error);
-            });
+        // Edpoint for 21Batch
+        app.get('/21batch', async (req, res) => {
+            await pushDataToDB(students21, 'Batch21',res);
         });
 
         const port = process.env.PORT || 4000;

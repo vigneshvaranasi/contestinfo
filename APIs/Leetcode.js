@@ -38,6 +38,22 @@ async function fetchLeetCodeData(username) {
                     startTime
                 }
             }
+            allQuestionsCount {
+                difficulty
+                count
+            }
+            matchedUser(username: $username) {
+                problemsSolvedBeatsStats {
+                    difficulty
+                    percentage
+                }
+                submitStatsGlobal {
+                    acSubmissionNum {
+                        difficulty
+                        count
+                    }
+                }
+            }
         }
     `;
     const variables = { username };
