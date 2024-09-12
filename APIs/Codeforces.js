@@ -94,14 +94,14 @@ async function fetchCodeforcesContestsData(username) {
             let newAttendedContests = await Promise.all(attendedContests.map(async contest => {
                 let newContest = { ...contest }; // Create a copy of the contest object
                 newContest.problemsSolved = await getSolved(username, contest.contestId);
-                console.log('newContest.problemsSolved: ', newContest.problemsSolved);
+                // console.log('newContest.problemsSolved: ', newContest.problemsSolved);
                 // newContest.totalProblems = await getTotalProblems(contest.contestId);
                 // console.log(`Contest: ${contest.contestId}, Problems Solved: ${newContest.problemsSolved}, Total Problems: ${newContest.totalProblems}`);
                 return newContest;
             }));
 
             attendedContests = newAttendedContests;
-            console.log('attendedContests: ', attendedContests);
+            // console.log('attendedContests: ', attendedContests);
 
             return { username, attendedContests };
         } else {
@@ -142,7 +142,7 @@ const fetchCodeforcesProblemsData = async (username) => {
             return [];
         }
         data = data.result.filter(submission => submission.verdict === 'OK');
-        console.log('Problemsdata: ', data);
+        // console.log('Problemsdata: ', data);
         return data;
     } catch (error) {
         console.error(`Failed to fetch data for ${username}:`, error);

@@ -2,15 +2,28 @@ name: Ping Backend Daily
 
 on:
   schedule:
-    - cron: '30 18 * * *'  # This triggers the action daily at 6:30 PM UTC, which is 12:00 AM IST
+    # Schedule Batch 22 Data Scrape at 12:00 AM IST
+    - cron: '30 18 * * *'  # 6:30 PM UTC
+    # Schedule Batch 21 Data Scrape at 1:30 AM IST
+    - cron: '00 20 * * *'  # 8:00 PM UTC
 
 jobs:
-  ping-backend:
+  ping-batch-22:
+    if: github.event.schedule == '30 18 * * *'
     runs-on: ubuntu-latest
     steps:
-      # - name: Scrape Students Data
-      #   run: |
-      #     curl -X GET https://contestinfo-m59t.onrender.com/data
+      - name: Scrape Batch22 Data
+        run: |
+          curl -X GET https://contestinfo-m59t.onrender.com/22batch
+
       - name: Get Latest Contest Data
         run: |
           curl -X GET https://contestinfo-m59t.onrender.com/getUpcomingContests
+
+  ping-batch-21:
+    if: github.event.schedule == '00 20 * * *'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Scrape Batch21 Data
+        run: |
+          curl -X GET https://contestinfo-m59t.onrender.com/21batch

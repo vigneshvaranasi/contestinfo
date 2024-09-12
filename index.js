@@ -118,11 +118,11 @@ async function startServer() {
             });
 
             // Wait for all promises to resolve
-            const allStudentsData = await Promise.all(promises);
+            // const allStudentsData = await Promise.all(promises);
             // Send response indicating success
             res.json({
                 message: 'Data scraped and stored successfully',
-                data: allStudentsData,
+                // data: allStudentsData,
             });
         }
 
