@@ -89,10 +89,11 @@ async function startServer() {
                         error: 'Username not available',
                     };
                 }
-                // let data = await fetchCodeforcesContestsData(student.codeforces);
-                // let problems = await fetchCodeforcesProblemsData(student.codeforces);
-                // data.problems = await problems;
-                // const codeforcesData = data;
+                let data = await fetchCodeforcesContestsData(student.codeforces);
+                let problems = await fetchCodeforcesProblemsData(student.codeforces);
+                data.problems = await problems;
+                const codeforcesData = data;
+                // const codeforcesData = await problems;
                 const leetcodeData = await fetchLeetCodeData(student.leetcode);
                 const codechefData = await scrapeCodeChef(student.codechef);
 
@@ -100,7 +101,7 @@ async function startServer() {
                 const userData = {
                     name: student.name,
                     roll: student.roll,
-                    // codeforces: codeforcesData,
+                    codeforces: codeforcesData,
                     leetcode: leetcodeData,
                     codechef: codechefData,
                 };
@@ -177,9 +178,14 @@ async function startServer() {
             }
         });
 
-        // Edpoint for 21Batch
+        // Endpoint for 21Batch
         app.get('/21batch', async (req, res) => {
             await pushDataToDB(students21, 'Batch21',res);
+        });
+
+        // Endpoint for 22Batch
+        app.get('/22batch', async (req, res) => {
+            await pushDataToDB(students22, 'Batch22',res);
         });
 
         const port = process.env.PORT || 4000;

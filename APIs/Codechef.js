@@ -7,7 +7,7 @@ const fetch = (...args) =>
 
 // Create a Bottleneck limiter
 const limiter = new Bottleneck({
-    minTime: 10000, // Minimum time between requests
+    minTime: 8000, // Minimum time between requests
     maxConcurrent: 3 // Maximum number of concurrent requests
 });
 
