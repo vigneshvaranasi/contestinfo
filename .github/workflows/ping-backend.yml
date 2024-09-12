@@ -8,9 +8,9 @@ jobs:
   ping-backend:
     runs-on: ubuntu-latest
     steps:
-      - name: Scrape Students Data
-        run: |
-          curl -X GET https://contestinfo-m59t.onrender.com/data
+      # - name: Scrape Students Data
+      #   run: |
+      #     curl -X GET https://contestinfo-m59t.onrender.com/data
       - name: Get Latest Contest Data
         run: |
           curl -X GET https://contestinfo-m59t.onrender.com/getUpcomingContests
