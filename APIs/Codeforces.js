@@ -12,7 +12,7 @@ const limiter = new Bottleneck({
     maxConcurrent: 3 // Maximum number of concurrent requests
 });
 const getSolvedlimiter = new Bottleneck({
-    minTime: 500, // Minimum time between requests
+    minTime: 600, // Minimum time between requests
     maxConcurrent: 3 // Maximum number of concurrent requests
 });
 
@@ -31,7 +31,7 @@ async function getSolved(username, contestId) {
             })
         );
         if (body.status !== 200) {
-            console.log(`Rate limit or service unavailable for Codeforces ${username}.`);
+            console.log(`GetSolved - Rate limit or service unavailable for Codeforces ${username}.`);
             await delay(2000); // Fixed delay before retrying
             return getSolved(username, contestId); // Retry once
         }
@@ -87,7 +87,7 @@ async function fetchCodeforcesContestsData(username) {
         const contentType = response.headers.get("content-type");
         if (contentType && contentType.includes("application/json")) {
             let res = await response.json();
-            console.log('res: ', res);
+            // console.log('res: ', res);
             let allContests = res.result;
             let attendedContests = allContests.reverse();
 
