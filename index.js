@@ -78,6 +78,18 @@ async function startServer() {
         const students21 = require('./21.json');
         const students22 = require('./22.json');
 
+        // Import Parts of Students Data - 21Batch
+        const batch21_01 = require('./data/21Batch/01.json');
+        const batch21_02 = require('./data/21Batch/02.json');
+        const batch21_03 = require('./data/21Batch/03.json');
+        const batch21_04 = require('./data/21Batch/04.json');
+
+        // Import Parts of Students Data - 22Batch
+        const batch22_01 = require('./data/22Batch/01.json');
+        const batch22_02 = require('./data/22Batch/02.json');
+        const batch22_03 = require('./data/22Batch/03.json');
+        const batch22_04 = require('./data/22Batch/04.json');
+
         // Function to Push data to the DB t differnt collections
         async function pushDataToDB(batch, collection,res) {
 
@@ -186,6 +198,34 @@ async function startServer() {
         // Endpoint for 22Batch
         app.get('/22batch', async (req, res) => {
             await pushDataToDB(students22, 'Batch22',res);
+        });
+
+        // Endpoints for different parts of 21Batch
+        app.get('/21batch/01', async (req, res) => {
+            await pushDataToDB(batch21_01, 'Batch21',res);
+        });
+        app.get('/21batch/02', async (req, res) => {
+            await pushDataToDB(batch21_02, 'Batch21',res);
+        });
+        app.get('/21batch/03', async (req, res) => {
+            await pushDataToDB(batch21_03, 'Batch21',res);
+        });
+        app.get('/21batch/04', async (req, res) => {
+            await pushDataToDB(batch21_04, 'Batch21',res);
+        });
+
+        // Endpoints for different parts of 22Batch
+        app.get('/22batch/01', async (req, res) => {
+            await pushDataToDB(batch22_01, 'Batch22',res);
+        });
+        app.get('/22batch/02', async (req, res) => {
+            await pushDataToDB(batch22_02, 'Batch22',res);
+        });
+        app.get('/22batch/03', async (req, res) => {
+            await pushDataToDB(batch22_03, 'Batch22',res);
+        });
+        app.get('/22batch/04', async (req, res) => {
+            await pushDataToDB(batch22_04, 'Batch22',res);
         });
 
         const port = process.env.PORT || 4000;
