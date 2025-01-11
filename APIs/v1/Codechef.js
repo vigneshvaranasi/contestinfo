@@ -25,11 +25,6 @@ const scrapeCodeChef = async (username) => {
                 }
             })
         );
-            
-        // Set timeout
-        // setTimeout(()=>{
-            
-        // },200)
         const html = await res.text();
         const allRatingIndex = html.indexOf('var all_rating =');
         const endPoint = html.indexOf(';',allRatingIndex);
@@ -37,8 +32,8 @@ const scrapeCodeChef = async (username) => {
         console.log(username)
         console.log(jsonString)
         let allRating = JSON.parse(jsonString);
-        
         const $ = cheerio.load(html);
+        // Total Problems Solved by the User
         const problemsSolved = $('section.rating-data-section.problems-solved > h3').text().trim();
         const contentData = [];
         $('div.content').each((index, element) => {
@@ -57,6 +52,7 @@ const scrapeCodeChef = async (username) => {
                 });
             }
         });
+
         let dataofSolvedProblems = contentData;
         let newAllRating = allRating.map((rating)=>{
             if(rating.name.split(' ')[0] =='Starters'){
@@ -81,6 +77,8 @@ const scrapeCodeChef = async (username) => {
     }
     
 };
+const scrapedData = await scrapeCodeChef('pavankc');
+console.log(scrapedData);
 // Returns the all_rating object of the user
 const getAllRating= async(username)=>{
     try{
