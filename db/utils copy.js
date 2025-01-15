@@ -137,6 +137,10 @@ async function getDataOfStudents (batches) {
         const LeetcodeDataOfStudent = await fetchLeetCodeDataWithLimit(
           student.leetcode.username
         )
+        if(LeetcodeDataOfStudent.error){
+          console.log('Error in fetching data for LC ', student.leetcode.username, " rollNo: ", rollNo);
+          return;
+        }
 
         let currStudent = await Students.findOne({ rollNo: rollNo })
         
@@ -154,6 +158,10 @@ async function getDataOfStudents (batches) {
         const CodechefDataOfStudent = await scrapeCodeChef(
           student.codechef.username
         )
+        if(CodechefDataOfStudent.error){
+          console.log('Error in fetching data for CC ', student.codechef.username, " rollNo: ", rollNo);
+          return;
+        }
         let codechefResponse=await populateDataofContestandPerformance(
           rollNo,
           'codechef',
@@ -162,9 +170,18 @@ async function getDataOfStudents (batches) {
           CodechefDataOfStudent.UserData,
           20, 10, 5
         )
+
+
         const CodeforcesDataOfStudent = await fetchCodeforcesContestsData(
           student.codeforces.username
         )
+
+        if(CodeforcesDataOfStudent.error){
+          console.log('Error in fetching data for CF ', student.codeforces.username, " rollNo: ", rollNo);
+          return;
+        }
+
+
         let codeforcesResponse = await populateDataofContestandPerformance(
           rollNo,
           'codeforces',
@@ -173,9 +190,16 @@ async function getDataOfStudents (batches) {
           CodeforcesDataOfStudent.UserData,
           50, 1, 15
         )
+
+
         const InterviewbitDataOfStudent = await InterviewBitInfo(
           student.interviewbit.username
         )
+
+        if(InterviewbitDataOfStudent.error){
+          console.log('Error in fetching data for IB ', student.interviewbit.username, " rollNo: ", rollNo);
+          return;
+        }
 
         currStudent.leetcode.score = leetcodeResponse.score
         currStudent.leetcode.TotalProblemsSolved = LeetcodeDataOfStudent.UserData.TotalProblemsSolved

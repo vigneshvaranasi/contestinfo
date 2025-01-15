@@ -87,7 +87,9 @@ async function fetchCodeforcesContestsData(username) {
         }
     } catch (error) {
         console.error(`Failed to fetch data for ${username}:`, error);
-        return { username, error: error.message };
+        return {
+            error: "Failed to Fetch the Data"
+        }
     }
 }
 

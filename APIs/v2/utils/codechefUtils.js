@@ -133,6 +133,9 @@ const scrapeCodeChef = async (username) => {
         };
     } catch (err) {
         console.error(err);
+        return{
+            error: "Failed to Fetch the Data"
+        }
     }
 };
 

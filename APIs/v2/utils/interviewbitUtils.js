@@ -63,6 +63,7 @@ const InterviewBitPS = async username => {
 
 
 async function InterviewBitInfo(username){
+  try{
     let platformScore= await InterviewBitScore(username)
     return{
         platformScore,
@@ -70,6 +71,13 @@ async function InterviewBitInfo(username){
         username: username,
         score:Math.round(platformScore/5)
     }
+
+  }catch(err){
+    console.log(err)
+    return {
+      error: "Failed to fetch data"
+    }
+  }
 }
 // InterviewBitInfo('vvsvignesh')
 // .then(data => console.log(data))

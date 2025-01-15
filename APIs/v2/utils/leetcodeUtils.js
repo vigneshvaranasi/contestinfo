@@ -126,7 +126,7 @@ async function fetchLeetCodeData(username) {
         // return { username, data: data.data };
     } catch (error) {
         console.error(`Failed to fetch data for ${username}:`, error);
-        return { username, error: error.message };
+        return { username, error: "Failed to fetch data" };
     }
 }
 
