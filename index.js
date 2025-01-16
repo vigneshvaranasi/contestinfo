@@ -32,7 +32,13 @@ function run() {
   })
 
   const getBatchData = require('./APIs/v2/getBatchData.js')
-  app.use('/batch', getBatchData)
+  app.use('/v2/batch', getBatchData)
+
+  const getStudentData = require('./APIs/v2/getStudentData.js')
+  app.use('/v2/student', getStudentData)
+
+  const getContestData = require('./APIs/v2/getContestData.js')
+  app.use('/v2/contest', getContestData)
 
   // pushStudents(Batch22);
   // pushStudents(Batch21);

@@ -67,6 +67,8 @@ router.get('/yearBranch', async (req, res) => {
             return newStudent;
         })
 
+        
+
 
         res.status(200).json(studentDataWithPerformance);
     } catch (err) {
@@ -76,7 +78,6 @@ router.get('/yearBranch', async (req, res) => {
 });
 router.get('/branch', async (req, res) => {
     try {
-        // Get the req.body
         const body = req.body;
         console.log('body: ', body);
         let { branch } = body;
@@ -141,7 +142,6 @@ router.get('/branch', async (req, res) => {
 });
 router.get('/year', async (req, res) => {
     try {
-        // Get the req.body
         const body = req.body;
         console.log('body: ', body);
         let { year} = body;
@@ -197,8 +197,6 @@ router.get('/year', async (req, res) => {
             newStudent.codeforces.contests = codeForcesPerformances;
             return newStudent;
         })
-
-
         res.status(200).json(studentDataWithPerformance);
     } catch (err) {
         console.error(err);

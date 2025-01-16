@@ -139,6 +139,31 @@ async function getDataOfStudents(batches) {
         const LeetcodeDataOfStudent = await fetchLeetCodeDataWithLimit(
           student.leetcode.username
         );
+        if(LeetcodeDataOfStudent.error){
+          console.log('Error in fetching data for LC ', student.leetcode.username, " rollNo: ", rollNo);
+          return;
+        }
+        const CodechefDataOfStudent = await scrapeCodeChef(
+          student.codechef.username
+        );
+        if(CodechefDataOfStudent.error){
+          console.log('Error in fetching data for CC ', student.codechef.username, " rollNo: ", rollNo);
+          return;
+        }
+        const CodeforcesDataOfStudent = await fetchCodeforcesContestsData(
+          student.codeforces.username
+        );
+        if(CodeforcesDataOfStudent.error){
+          console.log('Error in fetching data for CF ', student.codeforces.username, " rollNo: ", rollNo);
+          return;
+        }
+        const InterviewbitDataOfStudent = await InterviewBitInfo(
+          student.interviewbit.username
+        );
+        if(InterviewbitDataOfStudent.error){
+          console.log('Error in fetching data for IB ', student.interviewbit.username, " rollNo: ", rollNo);
+          return;
+        }
 
         let currStudent = await Students.findOne({ rollNo });
         if (!currStudent) {
@@ -155,9 +180,7 @@ async function getDataOfStudents(batches) {
           50, 20, 10
         );
 
-        const CodechefDataOfStudent = await scrapeCodeChef(
-          student.codechef.username
-        );
+        
         const codechefResponse = await populateDataOfContestAndPerformance(
           rollNo,
           'codechef',
@@ -167,9 +190,7 @@ async function getDataOfStudents(batches) {
           20, 10, 5
         );
 
-        const CodeforcesDataOfStudent = await fetchCodeforcesContestsData(
-          student.codeforces.username
-        );
+        
         const codeforcesResponse = await populateDataOfContestAndPerformance(
           rollNo,
           'codeforces',
@@ -179,9 +200,7 @@ async function getDataOfStudents(batches) {
           50, 1, 15
         );
 
-        const InterviewbitDataOfStudent = await InterviewBitInfo(
-          student.interviewbit.username
-        );
+        
 
         currStudent.leetcode = {
           username: student.leetcode.username,
