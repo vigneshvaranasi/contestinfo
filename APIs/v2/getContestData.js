@@ -12,6 +12,11 @@ router.get('/', async (req, res) =>{
     const contestData = await Contests.findOne({
         contestName: contestName
     }).lean();
+
+    if(!contestData){
+        return res.status(404).send('Contest not found');
+    }
+
     const performancesData = await Performances.find({
         contest: contestData._id
     }).lean();
@@ -60,6 +65,9 @@ router.get('/branch', async (req, res) =>{
     const contestData = await Contests.findOne({
         contestName: contestName
     }).lean();
+    if(!contestData){
+        return res.status(404).send('Contest not found');
+    }
     const performancesData = await Performances.find({
         contest: contestData._id
     }).lean();
@@ -109,6 +117,9 @@ router.get('/year', async (req, res) =>{
     const contestData = await Contests.findOne({
         contestName: contestName
     }).lean();
+    if(!contestData){
+        return res.status(404).send('Contest not found');
+    }
     const performancesData = await Performances.find({
         contest: contestData._id
     }).lean();
@@ -157,6 +168,9 @@ router.get('/contestName/branch', async (req, res) =>{
     const contestData = await Contests.findOne({
         contestName: contestName
     }).lean();
+    if(!contestData){
+        return res.status(404).send('Contest not found');
+    }
     const performancesData = await Performances.find({
         contest: contestData._id
     }).lean();

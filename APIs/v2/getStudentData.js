@@ -18,6 +18,9 @@ router.get('/', async (req, res) => {
                 model: 'Contests',
             })
             .lean();
+        if(studentData.length === 0) {
+            return res.status(404).send('Student not found');
+        }
 
         const performanceData = await Performances.find({
             rollNo: rollNo,

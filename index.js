@@ -5,7 +5,13 @@ const mongoose = require('mongoose')
 const cron = require('node-cron')
 const https = require('https')
 const cors = require('cors')
-app.use(cors({ origin: '*' }))
+app.use(cors({
+  origin: ['http://localhost:8888', 'https://v2contestinfo.onrender.com'], // Add allowed origins
+  methods: ['GET', 'POST', 'PUT', 'DELETE'], 
+  credentials: true 
+}));
+app.options('*', cors());
+
 const { Students } = require('./db/index.js');
 const { pushStudents, createStudent, makeBatches } = require('./db/utils.js');
 const Batch22 = require('./test22.json');

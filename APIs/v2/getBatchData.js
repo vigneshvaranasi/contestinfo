@@ -21,6 +21,10 @@ router.get('/yearBranch', async (req, res) => {
                 model: 'Contests'
             })
             .lean();
+        
+        if(studentData.length === 0) {
+            return res.status(404).send('No students found');
+        }
 
         const performanceData = await Performances.find({
             rollNo:{$in:studentData.map(student=>student.rollNo)}
@@ -87,6 +91,11 @@ router.get('/branch', async (req, res) => {
                 model: 'Contests'
             })
             .lean();
+        
+        if(studentData.length === 0) {
+            return res.status(404).send('No students found');
+        }
+
 
         const performanceData = await Performances.find({
             rollNo:{$in:studentData.map(student=>student.rollNo)}
@@ -152,6 +161,11 @@ router.get('/year', async (req, res) => {
                 model: 'Contests'
             })
             .lean();
+        
+        if(studentData.length === 0) {
+            return res.status(404).send('No students found');
+        }
+        
 
         const performanceData = await Performances.find({
             rollNo:{$in:studentData.map(student=>student.rollNo)}
