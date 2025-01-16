@@ -23,9 +23,7 @@ router.get('/', async (req, res) => {
             return res.status(404).send('No students found');
         }
 
-        const performanceData = await Performances.find({
-            rollNo:{$in:studentData.map(student=>student.rollNo)}
-        })
+        const performanceData = await Performances.find()
             .populate('contest')
             .lean();
 
