@@ -10,7 +10,6 @@ app.use(cors({
   methods: ['GET', 'POST', 'PUT', 'DELETE'], 
   credentials: true 
 }));
-app.options('*', cors());
 
 const { Students } = require('./db/index.js');
 const { pushStudents, createStudent, makeBatches } = require('./db/utils.js');
