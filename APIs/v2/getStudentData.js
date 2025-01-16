@@ -8,9 +8,9 @@ router.get('/health', async (req, res) => {
     res.send('This is Batch Data endpoint');
 });
 
-router.get('/rollNo', async (req, res) => {
+router.get('/', async (req, res) => {
     try {
-        const { rollNo } = req.body;
+        const { rollNo } = req.query;
 
         const studentData = await Students.find({ rollNo: rollNo })
             .populate({

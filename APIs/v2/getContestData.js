@@ -7,7 +7,7 @@ router.use(express.json());
 
 
 router.get('/', async (req, res) =>{
-    const contestName = req.body.contestName
+    const contestName = req.query.contestName
 
     const contestData = await Contests.findOne({
         contestName: contestName
@@ -55,7 +55,7 @@ router.get('/', async (req, res) =>{
 
 // branch
 router.get('/branch', async (req, res) =>{
-    const {contestName, branch} = req.body;
+    const {contestName, branch} = req.query;
 
     const contestData = await Contests.findOne({
         contestName: contestName
@@ -104,7 +104,7 @@ router.get('/branch', async (req, res) =>{
 
 // year
 router.get('/year', async (req, res) =>{
-    const {contestName, year} = req.body;
+    const {contestName, year} = req.query;
 
     const contestData = await Contests.findOne({
         contestName: contestName
@@ -152,7 +152,7 @@ router.get('/year', async (req, res) =>{
 })
 // year & branch
 router.get('/contestName/branch', async (req, res) =>{
-    const {contestName, branch , year} = req.body;
+    const {contestName, branch , year} = req.query;
 
     const contestData = await Contests.findOne({
         contestName: contestName

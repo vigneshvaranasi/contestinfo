@@ -10,9 +10,8 @@ router.get('/health', async (req, res) => {
 
 router.get('/yearBranch', async (req, res) => {
     try {
-        // Get the req.body
-        const body = req.body;
-        console.log('body: ', body);
+        // Get the req.query
+        const body = req.query;
         let { year, branch } = body;
         year = parseInt(year);
 
@@ -67,7 +66,7 @@ router.get('/yearBranch', async (req, res) => {
             return newStudent;
         })
 
-        
+
 
 
         res.status(200).json(studentDataWithPerformance);
@@ -78,7 +77,7 @@ router.get('/yearBranch', async (req, res) => {
 });
 router.get('/branch', async (req, res) => {
     try {
-        const body = req.body;
+        const body = req.query;
         console.log('body: ', body);
         let { branch } = body;
 
@@ -142,7 +141,7 @@ router.get('/branch', async (req, res) => {
 });
 router.get('/year', async (req, res) => {
     try {
-        const body = req.body;
+        const body = req.query;
         console.log('body: ', body);
         let { year} = body;
         year = parseInt(year);
