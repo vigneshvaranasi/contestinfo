@@ -27,6 +27,8 @@ const pushStudents = async (students) => {
   }
 };
 
+
+
 const populateDataOfContestAndPerformance = async (
   rollNo,
   platform,
@@ -67,6 +69,7 @@ const populateDataOfContestAndPerformance = async (
           platform,
           contestName: currDataOfContest.contestName,
           date: currDataOfContest.date,
+          startTime: convertDate(currDataOfContest.startTime),
           link: currDataOfContest.link,
         });
         currentContest = newContest;
@@ -257,7 +260,7 @@ async function makeBatches() {
     const batches = [];
     const batchSize = 40;
 
-    for (let i = 319; i < students.length; i += batchSize) {
+    for (let i = 0; i < students.length; i += batchSize) {
       batches.push(students.slice(i, i + batchSize));
     }
 

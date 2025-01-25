@@ -7,6 +7,7 @@ const https = require('https')
 const cors = require('cors')
 app.use(cors())
 
+const { Contests } = require('./db/index.js');
 
 const { Students } = require('./db/index.js');
 const { pushStudents, createStudent, makeBatches } = require('./db/utils.js');
@@ -17,7 +18,7 @@ mongoose
   .connect(dbURL)
   .then(() => console.log('Connected to MongoDB successfully'))
   .then(() => {
-
+    // RUN THIS TO UPDATE BATCHES
     // makeBatches().then(() => {
     //   console.log('Batches created')
     // });

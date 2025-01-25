@@ -1,4 +1,4 @@
-function formatDate(timestamp){
+function formatDate(timestamp) {
     const date = new Date(timestamp * 1000)
     const day = String(date.getDate()).padStart(2, '0');
     const month = String(date.getMonth() + 1).padStart(2, '0');
@@ -8,6 +8,13 @@ function formatDate(timestamp){
     return formattedDate;
 }
 
+function convertDate(date) {
+    const parts = date.split("-");
+    const formattedDate = new Date(`20${parts[2]}-${parts[1]}-${parts[0]}`);
+    return formattedDate;
+}
+
 module.exports = {
-    formatDate
+    formatDate,
+    convertDate
 }

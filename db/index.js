@@ -144,6 +144,10 @@ const ContestsSchema=new mongoose.Schema({
     link:{
         type:String,
         required:true
+    },
+    startTime:{
+        type:Date,
+        required:true
     }
 })
 
