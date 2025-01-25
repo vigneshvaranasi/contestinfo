@@ -8,6 +8,20 @@ router.get('/health', async (req, res) => {
     res.send('This is Batch Data endpoint');
 });
 
+router.get('/getYearsBranches', async(req,res)=>{
+    try{
+        const studentData = await Students.find().distinct('year');
+        const branchData = await Students.find().distinct('branch');
+        res.status(200).json({
+            years: studentData,
+            branches: branchData
+        });
+    }catch(err){
+        console.error(err);
+        res.status(500).send('No Student data found');
+    }
+})
+
 
 router.get('/', async (req, res) => {
     try {
