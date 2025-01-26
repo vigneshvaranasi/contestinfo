@@ -221,6 +221,7 @@ const ActionSchema = new mongoose.Schema({
 const Students = mongoose.model('Students',StudentsSchema);
 const Contests = mongoose.model('Contests',ContestsSchema)
 const Performances = mongoose.model('Performances',PerformancesSchema)
-const Users = mongoose.model('User',UserSchema)
+const Users = mongoose.model('User',UserSchema);
+const Actions = mongoose.model('Action',ActionSchema);
 
-module.exports = {Students,Contests,Performances,Users}
+module.exports = {Students,Contests,Performances,Users, Actions}
