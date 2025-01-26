@@ -23,7 +23,7 @@ router.get('/getContests', async (req, res) => {
 
 router.get('/', async (req, res) => {
     const contestName = req.query.contestName
-
+    console.log(contestName)
     const contestData = await Contests.findOne({
         contestName: contestName
     }).lean();
@@ -72,6 +72,73 @@ router.get('/', async (req, res) => {
         students: studentsPerformances
     })
 });
+
+
+router.get('/id/:id', async (req, res) => {
+    const contestId = req.params.id;
+
+    try {
+        // Fetch the contest data by _id
+        const contestData = await Contests.findById(contestId).lean();
+
+        if (!contestData) {
+            return res.status(404).send('Contest not found');
+        }
+
+        // Fetch performances for the contest
+        const performancesData = await Performances.find({
+            contest: contestId
+        }).lean();
+
+        // Extract roll numbers of participating students
+        const rollNos = performancesData.map(performance => performance.rollNo);
+
+        // Fetch student data for the roll numbers
+        const studentsData = await Students.find({
+            rollNo: { $in: rollNos }
+        }).lean();
+
+        // Create a map of students
+        const studentsMap = new Map();
+        studentsData.forEach(student => {
+            studentsMap.set(student.rollNo, {
+                name: student.name,
+                rollNo: student.rollNo,
+                year: student.year,
+                branch: student.branch
+            });
+        });
+
+        // Create a map of performances
+        const performancesMap = new Map();
+        performancesData.forEach(performance => {
+            performancesMap.set(performance.rollNo, performance);
+        });
+
+        // Combine student and performance data
+        const studentsPerformances = [];
+        studentsMap.forEach((student, rollNo) => {
+            const performance = performancesMap.get(rollNo);
+            studentsPerformances.push({
+                ...student,
+                performance: performance.performance
+            });
+        });
+
+        // Sort by rank
+        studentsPerformances.sort((a, b) => a.performance.rank - b.performance.rank);
+
+        // Return the combined result
+        res.status(200).json({
+            contest: contestData,
+            students: studentsPerformances
+        });
+    } catch (err) {
+        console.error(err);
+        res.status(500).send('An error occurred while fetching contest data');
+    }
+});
+
 
 // branch
 router.get('/branch', async (req, res) => {
