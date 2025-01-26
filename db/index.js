@@ -184,9 +184,43 @@ const PerformancesSchema=new mongoose.Schema({
     }
 })
 
+const UserSchema = new mongoose.Schema({
+    username:{
+        type:String,
+        required:true,
+        unique:true
+    },
+    password:{
+        type:String,
+        required:true
+    },
+    role:{
+        type:String,
+        enum:['dev', 'admin', 'user'],
+        required:true
+    }
+})
+
+const ActionSchema = new mongoose.Schema({
+    action:{
+        type:String,
+        required:true
+    },
+    time:{
+        type:Date,
+        required:true,
+        default:Date.now()
+    },
+    username:{
+        type:String,
+        required:true
+    }
+})
+
 
 const Students = mongoose.model('Students',StudentsSchema);
 const Contests = mongoose.model('Contests',ContestsSchema)
 const Performances = mongoose.model('Performances',PerformancesSchema)
+const Users = mongoose.model('User',UserSchema)
 
-module.exports = {Students,Contests,Performances}
+module.exports = {Students,Contests,Performances,Users}

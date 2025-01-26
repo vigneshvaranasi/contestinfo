@@ -4,7 +4,7 @@ const { fetchLeetCodeDataWithLimit } = require('../APIs/v2/utils/leetcodeUtils.j
 const { fetchCodeforcesContestsData } = require('../APIs/v2/utils/codeforcesUtils.js');
 const { scrapeCodeChef } = require('../APIs/v2/utils/codechefUtils.js');
 const { InterviewBitInfo } = require('../APIs/v2/utils/interviewbitUtils.js');
-
+const { convertDate,formatDate  } = require('../APIs/v2/utils/CommonUtils.js');
 const createStudent = async (student) => {
   try {
     const newStudent = await Students.create(student);
@@ -17,7 +17,9 @@ const createStudent = async (student) => {
 
 const pushStudents = async (students) => {
   try {
+    
     for (const student of students) {
+      console.log('student: ', student.rollNo);      
       await createStudent(student);
     }
     return students;
@@ -69,7 +71,7 @@ const populateDataOfContestAndPerformance = async (
           platform,
           contestName: currDataOfContest.contestName,
           date: currDataOfContest.date,
-          startTime: convertDate(currDataOfContest.startTime),
+          startTime: convertDate(currDataOfContest.date),
           link: currDataOfContest.link,
         });
         currentContest = newContest;
@@ -130,7 +132,7 @@ function calculateScore(
   );
 }
 
-let numberOfStudent = 319;
+let numberOfStudent = 183;
 async function getDataOfStudents(batches) {
   try {
     for (const batch of batches) {
@@ -260,7 +262,7 @@ async function makeBatches() {
     const batches = [];
     const batchSize = 40;
 
-    for (let i = 0; i < students.length; i += batchSize) {
+    for (let i = 183; i < students.length; i += batchSize) {
       batches.push(students.slice(i, i + batchSize));
     }
 

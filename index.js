@@ -29,6 +29,26 @@ mongoose
 
 
 function run() {
+  if (process.env.DEV_MODE) {
+    app.use((req, res, next) => {
+      const originalSend = res.send;
+      let responseData;
+
+      res.send = function (body) {
+        responseData = body;
+        return originalSend.apply(this, arguments);
+      };
+
+      res.on('finish', () => {
+        console.log(`Endpoint: ${req.method} ${req.originalUrl}`);
+        console.log(`Status Code: ${res.statusCode}`);
+        console.log(`Response Data: ${responseData}`);
+      });
+
+      next();
+    });
+  }
+
   // Endpoint to welcome users
   app.get('/', (req, res) => {
     res.send('Welcome to Contest Info Server V2')
@@ -43,6 +63,17 @@ function run() {
   const getContestData = require('./APIs/v2/getContestData.js')
   app.use('/v2/contest', getContestData)
 
+  const dev = require('./APIs/v2/super/dev.js')
+  app.use('/v2/dev', dev)
+
+  const admin = require('./APIs/v2/super/admin.js')
+  app.use('/v2/admin', admin)
+
+  const auth = require('./APIs/v2/auth/auth.js')
+  app.use('/v2/auth', auth)
+
+
+  // FOR ADDING STUDENTS IN DB FROM JSON
   // pushStudents(Batch22);
   // pushStudents(Batch21);
 
