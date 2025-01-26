@@ -1,7 +1,7 @@
 const router = require('express').Router();
 const express = require('express');
 
-const {Users} = require('../../../db/index.js');
+const {Users, Actions} = require('../../../db/index.js');
 const bcrypt = require('bcryptjs');
 router.use(express.json());
 // Middleware - TODO
@@ -29,6 +29,11 @@ router.post('/newAdmin', async (req,res)=>{
             username,
             password: hashedPassword,
             role
+        });
+        const action = await Actions.create({
+            action: `User ${username} created`,
+            username: req.username,
+            time: new Date()
         });
         res.send({message:"User created successfully", error:false});
     }catch(e){

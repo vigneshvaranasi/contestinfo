@@ -38,6 +38,14 @@ router.post('/students', async (req, res) => {
     try {
         const { year, branch } = req.body;
         const students = await Students.find({ year, branch });
+        if(students.length === 0){
+            res.send({
+                nOfStudents: 0,
+                year,
+                branch,
+                students: []
+            })
+        }
         res.send({
             nOfStudents: students.length,
             year,
@@ -46,7 +54,10 @@ router.post('/students', async (req, res) => {
         });
     } catch (err) {
         console.error(err);
-        res.status(500).send(err);
+        res.send({
+            message: "Error",
+            error: true
+        })
     }
 })
 
@@ -58,20 +69,38 @@ router.post('/newStudent', async (req, res) => {
         const { year, branch, student } = req.body;
         student.year = year;
         student.branch = branch;
+        const existingStudent = await Students.findOne({ rollNo: student.rollNo });
+        if (existingStudent) {
+            res.send({
+                message: "Student already exists",
+                error: true
+            });
+            return
+        }
         const newStudent = await createStudent(student);
         if (newStudent.error) {
-            return res.send({
+            res.send({
                 message: newStudent.message,
                 error: true
             });
+            return;
         }
+        const actionLog = await Actions.create({
+            action: `Created student ${student.rollNo}`,
+            username: req.username,
+            time: new Date()
+        })
         res.send({
-            message: newStudent.message,
-            student: newStudent.newStudent
+            message: "Student created successfully",
+            student: newStudent.newStudent,
+            error: false
         });
     } catch (err) {
         console.error(err);
-        res.status(500).send(err);
+        res.send({
+            message: "Error",
+            error: true
+        })
     }
 });
 
@@ -88,9 +117,16 @@ router.post('/updateStudent', async (req, res) => {
                 error: true
             });
         }
+        delete student.year;
+        delete student.branch;
+        const actionLog = await Actions.create({
+            action: `Updated student ${student.rollNo}`,
+            username: req.username,
+            time: new Date()
+        })
         res.send({
             message: "Student updated successfully",
-            student: updatedStudent
+            student: student
         });
     } catch (err) {
         console.error(err);
@@ -98,14 +134,38 @@ router.post('/updateStudent', async (req, res) => {
     }
 });
 
+// delete a student {year, branch, rollNo} => {message}
+router.delete('/deleteStudent', async (req, res) => {
+    try {
+        const { year, branch, rollNo } = req.body;
+        const deletedStudent = await Students.findOneAndDelete({ rollNo, year, branch });
+        if (!deletedStudent) {
+            return res.send({
+                message: "Student not found",
+                error: true
+            });
+        }
+        const actionLog = await Actions.create({
+            action: `Deleted student ${rollNo}`,
+            username: req.username,
+            time: new Date()
+        })
+        res.send({
+            message: "Student deleted successfully",
+            student: deletedStudent,
+            error: false
+        });
+        
+    } catch (err) {
+        console.error(err);
+        res.status(500).send(err);
+    }
+});
 
 // delete a batch {year,branch} => {message}
 router.delete('/deleteBatch', async (req, res) => {
     try {
         const { year, branch } = req.body;
-
-
-
         const allStudentsOfBatch = await Students.find({
             year, branch
         });
