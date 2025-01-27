@@ -264,7 +264,7 @@ router.get('/year', async (req, res) => {
         // console.log(typeof studentData);
 
         const studentDataWithPerformance = studentData.map((student) => {
-            const leetCodePerformances = (student.leetcode?.contests || []).map((contest) => {
+            const leetCodePerformances = student.leetcode.contests.map((contest) => {
                 const key = `{${student.rollNo}-${contest.contestName}}`;
                 const performance = performanceDataMap.get(key);
                 return {
@@ -273,7 +273,7 @@ router.get('/year', async (req, res) => {
                 };
             });
 
-            const codeChefPerformances = (student.codechef?.contests || []).map((contest) => {
+            const codeChefPerformances = student.codechef.contests.map((contest) => {
                 const key = `{${student.rollNo}-${contest.contestName}}`;
                 const performance = performanceDataMap.get(key);
                 return {
@@ -282,7 +282,7 @@ router.get('/year', async (req, res) => {
                 };
             });
 
-            const codeForcesPerformances = (student.codeforces?.contests || []).map((contest) => {
+            const codeForcesPerformances = student.codeforces.contests.map((contest) => {
                 const key = `{${student.rollNo}-${contest.contestName}}`;
                 const performance = performanceDataMap.get(key);
                 return {
