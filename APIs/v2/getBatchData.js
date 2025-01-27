@@ -8,15 +8,15 @@ router.get('/health', async (req, res) => {
     res.send('This is Batch Data endpoint');
 });
 
-router.get('/getYearsBranches', async(req,res)=>{
-    try{
+router.get('/getYearsBranches', async (req, res) => {
+    try {
         const studentData = await Students.find().distinct('year');
         const branchData = await Students.find().distinct('branch');
         res.status(200).json({
             years: studentData,
             branches: branchData
         });
-    }catch(err){
+    } catch (err) {
         console.error(err);
         res.status(500).send('No Student data found');
     }
@@ -32,8 +32,8 @@ router.get('/', async (req, res) => {
                 model: 'Contests'
             })
             .lean();
-        
-        if(studentData.length === 0) {
+
+        if (studentData.length === 0) {
             return res.status(404).send('No students found');
         }
 
@@ -42,13 +42,13 @@ router.get('/', async (req, res) => {
             .lean();
 
         let performanceDataMap = new Map();
-        performanceData.forEach((perf)=>{
-            const key  = `{${perf.rollNo}-${perf.contest.contestName}}`;
+        performanceData.forEach((perf) => {
+            const key = `{${perf.rollNo}-${perf.contest.contestName}}`;
             performanceDataMap.set(key, perf);
         })
 
-        const studentDataWithPerformance = studentData.map((student)=>{
-            const leetCodePerformances = student.leetcode.contests.map((contest)=>{
+        const studentDataWithPerformance = studentData.map((student) => {
+            const leetCodePerformances = student.leetcode.contests.map((contest) => {
                 const key = `{${student.rollNo}-${contest.contestName}}`;
                 const performance = performanceDataMap.get(key);
                 return {
@@ -56,7 +56,7 @@ router.get('/', async (req, res) => {
                     performance: performance.performance
                 }
             });
-            const codeChefPerformances = student.codechef.contests.map((contest)=>{
+            const codeChefPerformances = student.codechef.contests.map((contest) => {
                 const key = `{${student.rollNo}-${contest.contestName}}`;
                 const performance = performanceDataMap.get(key);
                 return {
@@ -64,7 +64,7 @@ router.get('/', async (req, res) => {
                     performance: performance.performance
                 }
             });
-            const codeForcesPerformances = student.codeforces.contests.map((contest)=>{
+            const codeForcesPerformances = student.codeforces.contests.map((contest) => {
                 const key = `{${student.rollNo}-${contest.contestName}}`;
                 const performance = performanceDataMap.get(key);
                 return {
@@ -72,7 +72,7 @@ router.get('/', async (req, res) => {
                     performance: performance.performance
                 }
             });
-            let newStudent = {...student};
+            let newStudent = { ...student };
             newStudent.leetcode.contests = leetCodePerformances;
             newStudent.codechef.contests = codeChefPerformances;
             newStudent.codeforces.contests = codeForcesPerformances;
@@ -101,25 +101,25 @@ router.get('/yearBranch', async (req, res) => {
                 model: 'Contests'
             })
             .lean();
-        
-        if(studentData.length === 0) {
+
+        if (studentData.length === 0) {
             return res.status(404).send('No students found');
         }
 
         const performanceData = await Performances.find({
-            rollNo:{$in:studentData.map(student=>student.rollNo)}
+            rollNo: { $in: studentData.map(student => student.rollNo) }
         })
             .populate('contest')
             .lean();
 
         let performanceDataMap = new Map();
-        performanceData.forEach((perf)=>{
-            const key  = `{${perf.rollNo}-${perf.contest.contestName}}`;
+        performanceData.forEach((perf) => {
+            const key = `{${perf.rollNo}-${perf.contest.contestName}}`;
             performanceDataMap.set(key, perf);
         })
 
-        const studentDataWithPerformance = studentData.map((student)=>{
-            const leetCodePerformances = student.leetcode.contests.map((contest)=>{
+        const studentDataWithPerformance = studentData.map((student) => {
+            const leetCodePerformances = student.leetcode.contests.map((contest) => {
                 const key = `{${student.rollNo}-${contest.contestName}}`;
                 const performance = performanceDataMap.get(key);
                 return {
@@ -127,7 +127,7 @@ router.get('/yearBranch', async (req, res) => {
                     performance: performance.performance
                 }
             });
-            const codeChefPerformances = student.codechef.contests.map((contest)=>{
+            const codeChefPerformances = student.codechef.contests.map((contest) => {
                 const key = `{${student.rollNo}-${contest.contestName}}`;
                 const performance = performanceDataMap.get(key);
                 return {
@@ -135,7 +135,7 @@ router.get('/yearBranch', async (req, res) => {
                     performance: performance.performance
                 }
             });
-            const codeForcesPerformances = student.codeforces.contests.map((contest)=>{
+            const codeForcesPerformances = student.codeforces.contests.map((contest) => {
                 const key = `{${student.rollNo}-${contest.contestName}}`;
                 const performance = performanceDataMap.get(key);
                 return {
@@ -143,7 +143,7 @@ router.get('/yearBranch', async (req, res) => {
                     performance: performance.performance
                 }
             });
-            let newStudent = {...student};
+            let newStudent = { ...student };
             newStudent.leetcode.contests = leetCodePerformances;
             newStudent.codechef.contests = codeChefPerformances;
             newStudent.codeforces.contests = codeForcesPerformances;
@@ -171,26 +171,26 @@ router.get('/branch', async (req, res) => {
                 model: 'Contests'
             })
             .lean();
-        
-        if(studentData.length === 0) {
+
+        if (studentData.length === 0) {
             return res.status(404).send('No students found');
         }
 
 
         const performanceData = await Performances.find({
-            rollNo:{$in:studentData.map(student=>student.rollNo)}
+            rollNo: { $in: studentData.map(student => student.rollNo) }
         })
             .populate('contest')
             .lean();
 
         let performanceDataMap = new Map();
-        performanceData.forEach((perf)=>{
-            const key  = `{${perf.rollNo}-${perf.contest.contestName}}`;
+        performanceData.forEach((perf) => {
+            const key = `{${perf.rollNo}-${perf.contest.contestName}}`;
             performanceDataMap.set(key, perf);
         })
 
-        const studentDataWithPerformance = studentData.map((student)=>{
-            const leetCodePerformances = student.leetcode.contests.map((contest)=>{
+        const studentDataWithPerformance = studentData.map((student) => {
+            const leetCodePerformances = student.leetcode.contests.map((contest) => {
                 const key = `{${student.rollNo}-${contest.contestName}}`;
                 const performance = performanceDataMap.get(key);
                 return {
@@ -198,7 +198,7 @@ router.get('/branch', async (req, res) => {
                     performance: performance.performance
                 }
             });
-            const codeChefPerformances = student.codechef.contests.map((contest)=>{
+            const codeChefPerformances = student.codechef.contests.map((contest) => {
                 const key = `{${student.rollNo}-${contest.contestName}}`;
                 const performance = performanceDataMap.get(key);
                 return {
@@ -206,7 +206,7 @@ router.get('/branch', async (req, res) => {
                     performance: performance.performance
                 }
             });
-            const codeForcesPerformances = student.codeforces.contests.map((contest)=>{
+            const codeForcesPerformances = student.codeforces.contests.map((contest) => {
                 const key = `{${student.rollNo}-${contest.contestName}}`;
                 const performance = performanceDataMap.get(key);
                 return {
@@ -214,7 +214,7 @@ router.get('/branch', async (req, res) => {
                     performance: performance.performance
                 }
             });
-            let newStudent = {...student};
+            let newStudent = { ...student };
             newStudent.leetcode.contests = leetCodePerformances;
             newStudent.codechef.contests = codeChefPerformances;
             newStudent.codeforces.contests = codeForcesPerformances;
@@ -232,64 +232,72 @@ router.get('/year', async (req, res) => {
     try {
         const body = req.query;
         console.log('body: ', body);
-        let { year} = body;
+        let { year } = body;
         year = parseInt(year);
 
-        const studentData = await Students.find({ year: year})
+        const studentData = await Students.find({ year: year })
             .populate({
                 path: 'leetcode.contests codechef.contests codeforces.contests',
                 model: 'Contests'
             })
             .lean();
-        
-        if(studentData.length === 0) {
+
+        // console.log('studentData: ', studentData);
+
+        if (studentData.length === 0) {
             return res.status(404).send('No students found');
         }
 
 
         const performanceData = await Performances.find({
-            rollNo:{$in:studentData.map(student=>student.rollNo)}
+            rollNo: { $in: studentData.map(student => student.rollNo) }
         })
             .populate('contest')
             .lean();
 
         let performanceDataMap = new Map();
-        performanceData.forEach((perf)=>{
-            const key  = `{${perf.rollNo}-${perf.contest.contestName}}`;
+        performanceData.forEach((perf) => {
+            const key = `{${perf.rollNo}-${perf.contest.contestName}}`;
             performanceDataMap.set(key, perf);
         })
 
-        const studentDataWithPerformance = studentData.map((student)=>{
-            const leetCodePerformances = student.leetcode.contests.map((contest)=>{
+        // console.log(typeof studentData);
+
+        const studentDataWithPerformance = studentData.map((student) => {
+            const leetCodePerformances = (student.leetcode?.contests || []).map((contest) => {
                 const key = `{${student.rollNo}-${contest.contestName}}`;
                 const performance = performanceDataMap.get(key);
                 return {
                     contest,
-                    performance: performance.performance
-                }
+                    performance: performance?.performance
+                };
             });
-            const codeChefPerformances = student.codechef.contests.map((contest)=>{
+
+            const codeChefPerformances = (student.codechef?.contests || []).map((contest) => {
                 const key = `{${student.rollNo}-${contest.contestName}}`;
                 const performance = performanceDataMap.get(key);
                 return {
                     contest,
-                    performance: performance.performance
-                }
+                    performance: performance?.performance
+                };
             });
-            const codeForcesPerformances = student.codeforces.contests.map((contest)=>{
+
+            const codeForcesPerformances = (student.codeforces?.contests || []).map((contest) => {
                 const key = `{${student.rollNo}-${contest.contestName}}`;
                 const performance = performanceDataMap.get(key);
                 return {
                     contest,
-                    performance: performance.performance
-                }
+                    performance: performance?.performance
+                };
             });
-            let newStudent = {...student};
+
+            let newStudent = { ...student };
             newStudent.leetcode.contests = leetCodePerformances;
             newStudent.codechef.contests = codeChefPerformances;
             newStudent.codeforces.contests = codeForcesPerformances;
             return newStudent;
-        })
+        });
+
         res.status(200).json(studentDataWithPerformance);
     } catch (err) {
         console.error(err);
