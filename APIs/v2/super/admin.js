@@ -37,7 +37,7 @@ router.get('/batches', async (req, res) => {
 router.post('/students', async (req, res) => {
     try {
         const { year, branch } = req.body;
-        const students = await Students.find({ year, branch });
+        const students = await Students.find({ year, branch }).sort({ rollNo: 1 }).lean();
         if(students.length === 0){
             res.send({
                 nOfStudents: 0,
@@ -63,6 +63,7 @@ router.post('/students', async (req, res) => {
 
 
 const { createStudent } = require('./superUtils.js');
+const { getDataOfStudent } = require('../../../db/utils.js');
 // create a student {year, branch, student} => {message}
 router.post('/newStudent', async (req, res) => {
     try {
@@ -117,7 +118,7 @@ router.post('/updateStudent', async (req, res) => {
         let interviewbitUsername = student.interviewbit.username;
         let hackerrankUsername = student.hackerrank;
         let spojUsername = student.spoj;
-
+        const cleanPerformances = await Performances.deleteMany({ rollNo: student.rollNo, year, branch});
         const updatedStudent = await Students.findOneAndUpdate(
             { rollNo: student.rollNo },
             {
@@ -135,6 +136,7 @@ router.post('/updateStudent', async (req, res) => {
             },
             { new: true }
         );
+
         if (!updatedStudent) {
             return res.send({
                 message: "Student not found",
@@ -158,10 +160,44 @@ router.post('/updateStudent', async (req, res) => {
     }
 });
 
+// Refresh the Data of a particular student {rollNo, year, branch} => message
+
+router.put('/refreshStudent', async(req, res)=>{
+    try{
+        const {rollNo, year, branch} = req.body;
+        const refreshedStudent = await getDataOfStudent(rollNo, year, branch);
+        if(refreshedStudent.error){
+            res.send({
+                message: refreshedStudent.message,
+                error: true
+            })
+            return;
+        }
+        const actionLog = await Actions.create({
+            action: `Refreshed data of student ${rollNo}`,
+            username: req.username,
+            time: new Date()
+        })
+        res.send({
+            message: "Data refreshed successfully",
+            student: refreshedStudent.student,
+            timeTaken: refreshedStudent.timeTaken,
+            error: false
+        })
+    }catch(err){
+        console.error(err);
+        res.status(500).send({
+            message: err,
+            error: true
+        })
+    }
+})
+
 // delete a student {year, branch, rollNo} => {message}
 router.delete('/deleteStudent', async (req, res) => {
     try {
         const { year, branch, rollNo } = req.body;
+        const deletedPerformances = await Performances.deleteMany({ rollNo});
         const deletedStudent = await Students.findOneAndDelete({ rollNo, year, branch });
         if (!deletedStudent) {
             return res.send({
@@ -176,7 +212,6 @@ router.delete('/deleteStudent', async (req, res) => {
         })
         res.send({
             message: "Student deleted successfully",
-            student: deletedStudent,
             error: false
         });
         
