@@ -110,7 +110,31 @@ router.post('/updateStudent', async (req, res) => {
         const { year, branch, student } = req.body;
         student.year = year;
         student.branch = branch;
-        const updatedStudent = await Students.findOneAndUpdate({ rollNo: student.rollNo }, student);
+        let nameOfStudent = student.name;
+        let leetcodeUsername = student.leetcode.username;
+        let codechefUsername = student.codechef.username;
+        let codeforcesUsername = student.codeforces.username;
+        let interviewbitUsername = student.interviewbit.username;
+        let hackerrankUsername = student.hackerrank;
+        let spojUsername = student.spoj;
+
+        const updatedStudent = await Students.findOneAndUpdate(
+            { rollNo: student.rollNo },
+            {
+                $set: {
+                    year: year,
+                    branch: branch,
+                    name: nameOfStudent,
+                    "leetcode.username": leetcodeUsername,
+                    "codechef.username": codechefUsername,
+                    "codeforces.username": codeforcesUsername,
+                    "interviewbit.username": interviewbitUsername,
+                    hackerrank: hackerrankUsername,
+                    spoj: spojUsername,
+                },
+            },
+            { new: true }
+        );
         if (!updatedStudent) {
             return res.send({
                 message: "Student not found",
