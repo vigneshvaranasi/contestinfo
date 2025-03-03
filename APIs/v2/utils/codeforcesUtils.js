@@ -10,7 +10,7 @@ function delay(ms) {
 }
 // Create a Bottleneck limiter
 const limiter = new Bottleneck({
-    minTime: 1000, // Minimum time between requests
+    minTime: 5000, // Minimum time between requests
     maxConcurrent: 3 // Maximum number of concurrent requests
 });
 

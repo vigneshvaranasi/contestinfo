@@ -191,7 +191,48 @@ router.put('/refreshStudent', async(req, res)=>{
             error: true
         })
     }
+});
+
+// Refresh Data of many Students {[rollNo, year, branch]} => message
+router.put('/refreshStudents', async(req, res)=>{
+    try{
+        const students = req.body.students;
+        let refreshedStudents = [];
+        let timeTaken = 0;
+        for(let i=0; i<students.length; i++){
+            const refreshedStudent = await getDataOfStudent(students[i].rollNo, students[i].year, students[i].branch);
+            if(refreshedStudent.error){
+                res.send({
+                    message: refreshedStudent.message,
+                    error: true
+                })
+                return;
+            }
+            refreshedStudents.push(refreshedStudent.student);
+            timeTaken += refreshedStudent.timeTaken;
+        }
+        const actionLog = await Actions.create({
+            action: `Refreshed data of ${students.length} students`,
+            username: req.username,
+            time: new Date()
+        })
+        res.send({
+            message: "Data refreshed successfully",
+            students: refreshedStudents,
+            timeTaken,
+            error: false
+        })
+    }catch(err){
+        console.error(err);
+        res.status(500).send({
+            message: err,
+            error: true
+        })
+    }
 })
+
+
+
 
 // delete a student {year, branch, rollNo} => {message}
 router.delete('/deleteStudent', async (req, res) => {
