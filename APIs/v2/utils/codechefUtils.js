@@ -29,7 +29,7 @@ const scrapeCodeChef = async (username) => {
         const endPoint = html.indexOf(';', allRatingIndex);
 
         if (allRatingIndex === -1 || endPoint === -1) {
-            throw new Error('Failed to locate "var all_rating" in the HTML response');
+            throw new Error('Username does not exist');
         }
 
         let jsonString = html.substring(allRatingIndex + 16, endPoint);
@@ -39,7 +39,7 @@ const scrapeCodeChef = async (username) => {
         const problemsString = $('section.rating-data-section.problems-solved > h3').text().trim();
         const parsedProblems = problemsString.split(' ');
         const TotalProblemsSolved = parsedProblems[parsedProblems.length - 1];
-        console.log(TotalProblemsSolved); // Total Problems Solved
+        // console.log(TotalProblemsSolved); // Total Problems Solved
         const contentData = [];
         $('div.content').each((index, element) => {
             const name = $(element).find('h5 > span').html();

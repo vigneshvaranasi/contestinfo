@@ -138,7 +138,7 @@ function calculateScore(
 
 
 
-let numberOfStudent = 183;
+let numberOfStudent = 0;
 async function getDataOfStudents(batches) {
   try {
     for (const batch of batches) {
@@ -147,39 +147,56 @@ async function getDataOfStudents(batches) {
         console.log('Processing Student:', numberOfStudent, student.rollNo);
 
         const rollNo = student.rollNo;
+        let currStudent = await Students.findOne({ rollNo });
+        if (!currStudent) {
+          console.error(`Student with rollNo ${rollNo} not found.`);
+          continue;
+        }
         const LeetcodeDataOfStudent = await fetchLeetCodeDataWithLimit(
           student.leetcode.username
         );
         if (LeetcodeDataOfStudent.error) {
           console.log('Error in fetching data for LC ', student.leetcode.username, " rollNo: ", rollNo);
-          return;
+          currStudent.isError.leetcode = true;
+          await currStudent.save();
+          continue;
         }
         const CodechefDataOfStudent = await scrapeCodeChef(
           student.codechef.username
         );
         if (CodechefDataOfStudent.error) {
           console.log('Error in fetching data for CC ', student.codechef.username, " rollNo: ", rollNo);
-          return;
+          currStudent.isError.codechef = true;
+          await currStudent.save();
+          continue;
         }
         const CodeforcesDataOfStudent = await fetchCodeforcesContestsData(
           student.codeforces.username
         );
         if (CodeforcesDataOfStudent.error) {
           console.log('Error in fetching data for CF ', student.codeforces.username, " rollNo: ", rollNo);
-          return;
+          currStudent.isError.codeforces = true;
+          await currStudent.save();
+          continue;
         }
         const InterviewbitDataOfStudent = await InterviewBitInfo(
           student.interviewbit.username
         );
+        console.log('InterviewbitDataOfStudent: ', InterviewbitDataOfStudent);
         if (InterviewbitDataOfStudent.error) {
+          console.log('InterviewbitDataOfStudent.error: ', InterviewbitDataOfStudent.error);
           console.log('Error in fetching data for IB ', student.interviewbit.username, " rollNo: ", rollNo);
-          return;
+          console.log('boolean err', currStudent.isError);
+          currStudent.isError.interviewbit = true;
+          await currStudent.save();
+          continue;
         }
 
-        let currStudent = await Students.findOne({ rollNo });
-        if (!currStudent) {
-          console.error(`Student with rollNo ${rollNo} not found.`);
-          continue;
+        currStudent.isError = {
+          leetcode: false,
+          codeforces: false,
+          codechef: false,
+          interviewbit: false
         }
 
         const leetcodeResponse = await populateDataOfContestAndPerformance(
@@ -268,7 +285,7 @@ async function makeBatches() {
     const batches = [];
     const batchSize = 40;
 
-    for (let i = 183; i < students.length; i += batchSize) {
+    for (let i = 0; i < students.length; i += batchSize) {
       batches.push(students.slice(i, i + batchSize));
     }
 

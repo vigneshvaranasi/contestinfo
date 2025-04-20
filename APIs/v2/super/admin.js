@@ -124,6 +124,12 @@ router.post('/updateStudent', async (req, res) => {
             {
                 $set: {
                     year: year,
+                    isError:{
+                        leetcode: false,
+                        codeforces: false,
+                        codechef: false,
+                        interviewbit: false
+                    },
                     branch: branch,
                     name: nameOfStudent,
                     "leetcode.username": leetcodeUsername,

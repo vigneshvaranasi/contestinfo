@@ -31,6 +31,10 @@ async function fetchCodeforcesContestsData(username) {
         );
         // console.log('response: ', response);
         // if (response.status === 429 || response.status === 503 || response.status === 504 || response.status === 403) {
+        // console.log('response.status: ', response.status);
+        if(response.status == 400){
+            throw new Error("Username Not Found")
+        }
         if (response.status !== 200) {
             console.log(`Rate limit or service unavailable for Codeforces ${username}.`);
             await delay(2000); // Fixed delay before retrying
@@ -109,6 +113,10 @@ const fetchCodeforcesProblemsData = async (username) => {
                 }
             })
         );
+        // console.log('response.status: ', response.status);
+        if(response.status == 400){
+            throw new Error("Username Not Found")
+        }
         if (response.status !== 200) {
             console.log(`Rate limit or service unavailable for Codeforces ${username}.`);
             await delay(2000); // Fixed delay before retrying
@@ -150,7 +158,7 @@ const fetchCodeforcesProblemsData = async (username) => {
 
 
 
-// fetchCodeforcesProblemsData('pavankc')
+// fetchCodeforcesProblemsData('vvsvignesh')
 // .then(data=>{
 //     console.log(data);
 // })

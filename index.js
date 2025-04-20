@@ -13,6 +13,7 @@ const { Students } = require('./db/index.js');
 const { pushStudents, createStudent, makeBatches } = require('./db/utils.js');
 const Batch22 = require('./test22.json');
 const Batch21 = require('./test21.json');
+const falseData = require('./FalseData.json')
 const dbURL = process.env.DB_URL; // Use environment variable
 
 mongoose
@@ -20,9 +21,9 @@ mongoose
   .then(() => console.log('Connected to MongoDB successfully'))
   .then(() => {
     // RUN THIS TO UPDATE BATCHES
-    // makeBatches().then(() => {
-    //   console.log('Batches created')
-    // });
+    makeBatches().then(() => {
+      console.log('Batches created')
+    });
     run();
   })
   .catch((err) => console.error('Error connecting to MongoDB:', err));
@@ -76,6 +77,7 @@ function run() {
   // FOR ADDING STUDENTS IN DB FROM JSON
   // pushStudents(Batch22);
   // pushStudents(Batch21);
+  // pushStudents(falseData);
 
   const port = process.env.PORT || 4000;
   app.listen(port, () => {

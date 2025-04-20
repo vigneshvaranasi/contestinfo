@@ -33,6 +33,24 @@ const StudentsSchema=new mongoose.Schema({
         required:true,
         default:0
     },
+    isError:{
+        leetcode:{
+            type:Boolean,
+            default:false
+        },
+        codechef:{
+            type:Boolean,
+            default:false
+        },
+        codeforces:{
+            type:Boolean,
+            default:false
+        },
+        interviewbit:{
+            type:Boolean,
+            default:false
+        }
+    },
     leetcode:{
         score:{
             type:Number,

@@ -24,6 +24,9 @@ const InterviewBitScore = async username => {
         }
       })
     )
+    if(res.status==403){
+      throw new Error("Username Not Found")
+    }
     let data = await res.json()
     // console.log('data: ', data);
     // console.log(data)
@@ -31,7 +34,7 @@ const InterviewBitScore = async username => {
     return data.score
   } catch (err) {
     console.log(err);
-    return InterviewBitScore(username)
+    return -1;
   }
 }
 
@@ -51,13 +54,16 @@ const InterviewBitPS = async username => {
         }
       })
     )
+    if(res.status==403){
+      throw new Error("Some Problem with the User Account")
+    }
     let data = await res.json()
     return data.total_problems_solved
     // console.log(data)
     // console.log("Problems Solved",data.total_problems_solved)
   } catch (err) {
     console.log(err);
-    return InterviewBitPS(username)
+    return -1;
   }
 }
 
@@ -65,9 +71,16 @@ const InterviewBitPS = async username => {
 async function InterviewBitInfo(username){
   try{
     let platformScore= await InterviewBitScore(username)
+    if(platformScore===-1){
+      throw new Error("Username Not Found")
+    }
+    const tps = await InterviewBitPS(username)
+    if(tps==-1){
+      throw new Error("Some Problem with the User Account")
+    }
     return{
         platformScore,
-        TotalProblemsSolved: await InterviewBitPS(username),
+        TotalProblemsSolved: tps,
         username: username,
         score:Math.round(platformScore/5)
     }
@@ -79,7 +92,9 @@ async function InterviewBitInfo(username){
     }
   }
 }
-// InterviewBitInfo('vvsvignesh')
+// InterviewBitInfo('vvsvignes')
 // .then(data => console.log(data))
+// .then(InterviewBitInfo('vvsvignesh')
+// .then(data => console.log(data)))
 
 module.exports = {InterviewBitInfo}
