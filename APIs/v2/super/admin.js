@@ -315,7 +315,7 @@ router.post('/newView', async (req, res) => {
     try {
         let { name, rollNumbers } = req.body;
         rollNumbers = rollNumbers.map(rollNo => rollNo.toString().toUpperCase());
-        name = name.toString().spilit(' ').join('-');
+        name = name.toString().spilit(' ').join('-').toLowerCase();
         const existingView = await Views.findOne({ name });
         if (existingView) {
             return res.send({
