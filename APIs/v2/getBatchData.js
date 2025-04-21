@@ -1,6 +1,6 @@
 const router = require('express').Router();
 const express = require('express');
-const { Students, Contests, Performances } = require('../../db/index.js');
+const { Students, Contests, Performances,Views } = require('../../db/index.js');
 
 router.use(express.json())
 
@@ -43,8 +43,6 @@ const getEliteBatch = async () => {
     if (studentData.length === 0) {
         return res.status(404).send('No students found');
     }
-
-
     const performanceData = await Performances.find({
         rollNo: { $in: studentData.map(student => student.rollNo) }
     })
@@ -90,7 +88,61 @@ const getEliteBatch = async () => {
     });
     return studentDataWithPerformance;
 }
+const getViewData = async (rollNumbers) => {
+    const studentData = await Students.find({ rollNo: { $in: rollNumbers } })
+        .populate({
+            path: 'leetcode.contests codechef.contests codeforces.contests',
+            model: 'Contests'
+        })
+        .lean();
+    if (studentData.length === 0) {
+        return res.status(404).send('No students found');
+    }
+    const performanceData = await Performances.find({
+        rollNo: { $in: studentData.map(student => student.rollNo) }
+    })
+        .populate('contest')
+        .lean();
 
+    let performanceDataMap = new Map();
+    performanceData.forEach((perf) => {
+        const key = `{${perf.rollNo}-${perf.contest.contestName}}`;
+        performanceDataMap.set(key, perf);
+    })
+
+    const studentDataWithPerformance = studentData.map((student) => {
+        const leetCodePerformances = student.leetcode.contests.map((contest) => {
+            const key = `{${student.rollNo}-${contest.contestName}}`;
+            const performance = performanceDataMap.get(key);
+            return {
+                contest,
+                performance: performance.performance
+            }
+        });
+        const codeChefPerformances = student.codechef.contests.map((contest) => {
+            const key = `{${student.rollNo}-${contest.contestName}}`;
+            const performance = performanceDataMap.get(key);
+            return {
+                contest,
+                performance: performance.performance
+            }
+        });
+        const codeForcesPerformances = student.codeforces.contests.map((contest) => {
+            const key = `{${student.rollNo}-${contest.contestName}}`;
+            const performance = performanceDataMap.get(key);
+            return {
+                contest,
+                performance: performance.performance
+            }
+        });
+        let newStudent = { ...student };
+        newStudent.leetcode.contests = leetCodePerformances;
+        newStudent.codechef.contests = codeChefPerformances;
+        newStudent.codeforces.contests = codeForcesPerformances;
+        return newStudent;
+    });
+    return studentDataWithPerformance;
+}
 
 router.get('/', async (req, res) => {
     try {
@@ -391,5 +443,49 @@ router.get('/year', async (req, res) => {
         res.status(500).send('An error occurred while fetching student data.');
     }
 });
+
+// get all views { } => { views: [name]}
+router.get('/views', async (req, res) => {
+    try {
+        const viewData = await Views.find({}).lean();
+        if (viewData.length === 0) {
+            return res.status(404).send('No views found');
+        }
+        const viewNames = viewData.map(view => view.name);
+        res.status(200).json({ views: viewNames });
+    } catch (err) {
+        console.error(err);
+        res.status(500).send('An error occurred while fetching view data.');
+    }
+});
+// get view data { name } => { students: [student]}
+router.post('/view', async (req, res) => {
+    try {
+        let { name } = req.body;
+        if (!name) {
+            return res.status(400).send('View name is required');
+        }
+        name=name.toString().trim().split(' ').join('-');
+        const viewData = await Views.find({ name: name },{rollNumbers:1}).lean();
+        if (viewData.length === 0) {
+            return res.status(404).json({
+                message: 'No view found with the given name',
+                error:true
+            });
+        }
+        const studentData = await getViewData(viewData[0].rollNumbers.flat());
+        if (studentData.length === 0) {
+            return res.status(404).json({
+                message: 'No students found for the given view',
+                error:true
+            });
+        }
+        res.status(200).json(studentData);
+    } catch (err) {
+        console.error(err);
+        res.status(500).send('An error occurred while fetching view data.');
+    }
+});
+
 
 module.exports = router;

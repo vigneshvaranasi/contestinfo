@@ -219,6 +219,23 @@ const UserSchema = new mongoose.Schema({
     }
 })
 
+const ViewSchema = new mongoose.Schema({
+    rollNumbers:[{
+        type:String,
+        required:true
+    }],
+    name:{
+        type:String,
+        required:true,
+        unique:true
+    },
+    createdBy:{
+        type:mongoose.Schema.Types.ObjectId,
+        required:true,
+        ref:'User'
+    }
+})
+
 const ActionSchema = new mongoose.Schema({
     action:{
         type:String,
@@ -240,6 +257,7 @@ const Students = mongoose.model('Students',StudentsSchema);
 const Contests = mongoose.model('Contests',ContestsSchema)
 const Performances = mongoose.model('Performances',PerformancesSchema)
 const Users = mongoose.model('User',UserSchema);
+const Views = mongoose.model('Views',ViewSchema);
 const Actions = mongoose.model('Action',ActionSchema);
 
-module.exports = {Students,Contests,Performances,Users, Actions}
+module.exports = {Students,Contests,Performances,Users, Views, Actions}

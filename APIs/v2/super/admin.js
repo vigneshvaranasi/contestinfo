@@ -1,7 +1,7 @@
 const router = require('express').Router();
 const express = require('express');
 router.use(express.json());
-const { Users, Students, Performances, Actions } = require('../../../db/index.js');
+const { Users, Students, Performances, Actions, Views } = require('../../../db/index.js');
 const adminMiddleware = require('../auth/adminMiddleware.js');
 
 router.use(adminMiddleware);
@@ -307,6 +307,160 @@ router.delete('/deleteBatch', async (req, res) => {
             message: "Error",
             error: true
         })
+    }
+})
+
+// create a view {name, [rollNumbers]} => {message}
+router.post('/newView', async (req, res) => {
+    try {
+        let { name, rollNumbers } = req.body;
+        rollNumbers = rollNumbers.map(rollNo => rollNo.toString().toUpperCase());
+        name = name.toString().spilit(' ').join('-');
+        const existingView = await Views.findOne({ name });
+        if (existingView) {
+            return res.send({
+                message: "View already exists",
+                error: true
+            });
+        }
+        const dbStudents = await Students.find(
+            { rollNo: { $in: rollNumbers } },
+            { rollNo: 1 }
+        );
+        const studentRollNos = dbStudents.map(student => student.rollNo);
+        const adminDetails = await Users.findOne({username:req.username}, { _id: 1 });
+        if(!adminDetails){
+            res.json({
+                error:true,
+                message:"Un-Authenticated user"
+            })
+            return;
+        }
+        const createdBy = adminDetails._id;
+        const newView = await Views.create({
+            name,
+            rollNumbers: studentRollNos,
+            createdBy: createdBy
+        });
+        const actionLog = await Actions.create({
+            action: `Created view ${name}`,
+            username: req.username,
+            time: new Date()
+        })
+        res.send({
+            message: "View created successfully",
+            view: {
+                name: newView.name,
+                rollNumbers: rollNumbers
+            },
+            error: false
+        });
+    } catch (err) {
+        console.error(err);
+        res.status(500).send(err);
+    }
+})
+
+// delete a view {name} => {message}
+router.delete('/deleteView', async (req, res) => {
+    try {
+        const { name } = req.body;
+        const deletedView = await Views.findOneAndDelete({ name });
+        if (!deletedView) {
+            return res.send({
+                message: "View not found",
+                error: true
+            });
+        }
+        const actionLog = await Actions.create({
+            action: `Deleted view ${name}`,
+            username: req.username,
+            time: new Date()
+        })
+        res.send({
+            message: "View deleted successfully",
+            error: false
+        });
+    } catch (err) {
+        console.error(err);
+        res.status(500).send(err);
+    }
+});
+
+// add students to view {name, rollNumbers} => {message}
+router.post('/addStudentsToView', async (req, res) => {
+    try {
+        let { name, rollNumbers } = req.body;
+        rollNumbers = rollNumbers.map(rollNo => rollNo.toString().toUpperCase());
+        const dbStudents = await Students.find(
+            { rollNo: { $in: rollNumbers } },
+            { rollNo: 1 }
+        );
+        const studentRollNos = dbStudents.map(student => student.rollNo);
+        const updatedView = await Views.findOneAndUpdate(
+            { name },
+            { $addToSet: { rollNumbers: { $each: studentRollNos } } },
+            {new:true}
+        );
+        if (!updatedView) {
+            return res.send({
+                message: "View not found",
+                error: true
+            });
+        }
+        const actionLog = await Actions.create({
+            action: `Added students to view ${name}`,
+            username: req.username,
+            time: new Date()
+        })
+        res.send({
+            message: "Students added to view successfully",
+            view: {
+                name: updatedView.name,
+                rollNumbers: updatedView.rollNumbers
+            },
+            error: false
+        });
+    } catch (err) {
+        console.error(err);
+        res.status(500).send(err);
+    }
+})
+
+// remove students from view {name, students} => {message}
+router.post('/removeStudentsFromView', async (req, res) => {
+    try {
+        let { name, rollNumbers } = req.body;
+        rollNumbers = rollNumbers.map(rollNo => rollNo.toString().toUpperCase());
+        const dbStudents = await Students.find(
+            { rollNo: { $in: rollNumbers } },
+            { rollNo: 1 }
+        );
+        const studentRollNos = dbStudents.map(student => student.rollNo);
+        const updatedView = await Views.findOneAndUpdate(
+            { name },
+            { $pull: { rollNumbers: { $in: studentRollNos } } },
+            { new: true }
+        );
+        if (!updatedView) {
+            return res.send({
+                message: "View not found",
+                error: true
+            });
+        }
+        const actionLog = await Actions.create({
+            action: `Removed students from view ${name}`,
+            username: req.username,
+            time: new Date()
+        })
+        res.send({
+            message: "Students removed from view successfully",
+            view: updatedView,
+            error: false
+        });
+    } catch (err) {
+        console.error(err);
+        res.status(500).send(err);
     }
 })
 

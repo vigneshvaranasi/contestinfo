@@ -21,9 +21,9 @@ mongoose
   .then(() => console.log('Connected to MongoDB successfully'))
   .then(() => {
     // RUN THIS TO UPDATE BATCHES
-    makeBatches().then(() => {
-      console.log('Batches created')
-    });
+    // makeBatches().then(() => {
+    //   console.log('Batches created')
+    // });
     run();
   })
   .catch((err) => console.error('Error connecting to MongoDB:', err));

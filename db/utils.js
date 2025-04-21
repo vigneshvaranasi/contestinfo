@@ -386,8 +386,6 @@ const getDataOfStudent = async (rollNo, year, branch) => {
       50, 1, 15
     );
   
-  
-  
     currStudent.leetcode = {
       username: student.leetcode.username,
       score: leetcodeResponse.score,
