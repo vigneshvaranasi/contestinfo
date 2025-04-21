@@ -12,6 +12,7 @@ const authMiddleWare = async (req,res,next)=>{
         if(!token){
             return res.status(401).send('Unauthorized');
         }
+        console.log(authHeader);
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
         if(!decoded){
             return res.status(401).send('Unauthorized');

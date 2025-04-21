@@ -92,9 +92,5 @@ async function InterviewBitInfo(username){
     }
   }
 }
-// InterviewBitInfo('vvsvignes')
-// .then(data => console.log(data))
-// .then(InterviewBitInfo('vvsvignesh')
-// .then(data => console.log(data)))
 
 module.exports = {InterviewBitInfo}

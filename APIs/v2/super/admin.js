@@ -207,6 +207,7 @@ router.put('/refreshStudents', async(req, res)=>{
         let timeTaken = 0;
         for(let i=0; i<students.length; i++){
             const refreshedStudent = await getDataOfStudent(students[i].rollNo, students[i].year, students[i].branch);
+            console.log(refreshedStudent)
             if(refreshedStudent.error){
                 res.send({
                     message: refreshedStudent.message,

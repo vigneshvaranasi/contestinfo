@@ -319,7 +319,10 @@ const getDataOfStudent = async (rollNo, year, branch) => {
   
     if (!student) {
       console.error(`Student with rollNo ${rollNo} ${year} ${branch} not found.`);
-      return;
+      return{
+        error: true,
+        message: `Student with rollNo ${rollNo} ${year} ${branch} not found.`
+      };
     }
   
     const LeetcodeDataOfStudent = await fetchLeetCodeDataWithLimit(
@@ -327,34 +330,49 @@ const getDataOfStudent = async (rollNo, year, branch) => {
     );
     if (LeetcodeDataOfStudent.error) {
       console.log('Error in fetching data for LC ', student.leetcode.username, " rollNo: ", rollNo);
-      return;
+      return {
+        error: true,
+        message: 'Error in fetching data for LC'
+      }
     }
     const CodechefDataOfStudent = await scrapeCodeChef(
       student.codechef.username
     );
     if (CodechefDataOfStudent.error) {
       console.log('Error in fetching data for CC ', student.codechef.username, " rollNo: ", rollNo);
-      return;
+      return {
+        error: true,
+        message: 'Error in fetching data for CC'
+      }
     }
     const CodeforcesDataOfStudent = await fetchCodeforcesContestsData(
       student.codeforces.username
     );
     if (CodeforcesDataOfStudent.error) {
       console.log('Error in fetching data for CF ', student.codeforces.username, " rollNo: ", rollNo);
-      return;
+      return {
+        error: true,
+        message: 'Error in fetching data for CF'
+      }
     }
     const InterviewbitDataOfStudent = await InterviewBitInfo(
       student.interviewbit.username
     );
     if (InterviewbitDataOfStudent.error) {
       console.log('Error in fetching data for IB ', student.interviewbit.username, " rollNo: ", rollNo);
-      return;
+      return {
+        error: true,
+        message: 'Error in fetching data for IB'
+      }
     }
   
     let currStudent = await Students.findOne({ rollNo });
     if (!currStudent) {
       console.error(`Student with rollNo ${rollNo} not found.`);
-      return;
+      return{
+        error: true,
+        message: `Student with rollNo ${rollNo} not found.`
+      }
     }
   
     const leetcodeResponse = await populateDataOfContestAndPerformance(
