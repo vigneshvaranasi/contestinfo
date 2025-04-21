@@ -464,5 +464,27 @@ router.post('/removeStudentsFromView', async (req, res) => {
     }
 })
 
+router.post('/viewStudents', async(req,res)=>{
+    try{
+        const {name} = req.body;
+        const view = await Views.findOne({name});
+        if(!view){
+            return res.send({
+                message: "View not found",
+                error: true
+            });
+        }
+        const students = await Students.find({rollNo: {$in:view.rollNumbers}},{name:1,rollNo:1}).lean();
+        res.send({
+            message: "Students fetched successfully",
+            students,
+            error: false
+        })
+    }catch(err){
+        console.error(err);
+        res.status(500).send(err);
+    }   
+})
+
 
 module.exports = router;
