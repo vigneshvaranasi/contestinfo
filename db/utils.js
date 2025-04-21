@@ -148,6 +148,7 @@ async function getDataOfStudents(batches) {
 
         const rollNo = student.rollNo;
         let currStudent = await Students.findOne({ rollNo });
+
         if (!currStudent) {
           console.error(`Student with rollNo ${rollNo} not found.`);
           continue;
@@ -324,12 +325,24 @@ const getDataOfStudent = async (rollNo, year, branch) => {
         message: `Student with rollNo ${rollNo} ${year} ${branch} not found.`
       };
     }
+
+    const errorObject = student.isError;
+    if (errorObject.leetcode || errorObject.codeforces || errorObject.codechef || errorObject.interviewbit) {
+      console.log('Error in fetching data for student: ', rollNo, errorObject);
+      return {
+        error: true,
+        message: 'Error in fetching data for student',
+        errorObject: errorObject
+      }
+    }
   
     const LeetcodeDataOfStudent = await fetchLeetCodeDataWithLimit(
       student.leetcode.username
     );
     if (LeetcodeDataOfStudent.error) {
       console.log('Error in fetching data for LC ', student.leetcode.username, " rollNo: ", rollNo);
+      student.isError.leetcode = true;
+      await student.save();
       return {
         error: true,
         message: 'Error in fetching data for LC'
@@ -340,6 +353,8 @@ const getDataOfStudent = async (rollNo, year, branch) => {
     );
     if (CodechefDataOfStudent.error) {
       console.log('Error in fetching data for CC ', student.codechef.username, " rollNo: ", rollNo);
+      student.isError.codechef = true;
+      await student.save();
       return {
         error: true,
         message: 'Error in fetching data for CC'
@@ -350,6 +365,8 @@ const getDataOfStudent = async (rollNo, year, branch) => {
     );
     if (CodeforcesDataOfStudent.error) {
       console.log('Error in fetching data for CF ', student.codeforces.username, " rollNo: ", rollNo);
+      student.isError.codeforces = true;
+      await student.save();
       return {
         error: true,
         message: 'Error in fetching data for CF'
@@ -360,19 +377,19 @@ const getDataOfStudent = async (rollNo, year, branch) => {
     );
     if (InterviewbitDataOfStudent.error) {
       console.log('Error in fetching data for IB ', student.interviewbit.username, " rollNo: ", rollNo);
+      student.isError.interviewbit = true;
+      await student.save();
       return {
         error: true,
         message: 'Error in fetching data for IB'
       }
     }
-  
-    let currStudent = await Students.findOne({ rollNo });
-    if (!currStudent) {
-      console.error(`Student with rollNo ${rollNo} not found.`);
-      return{
-        error: true,
-        message: `Student with rollNo ${rollNo} not found.`
-      }
+
+    student.isError = {
+      leetcode: false,
+      codeforces: false,
+      codechef: false,
+      interviewbit: false
     }
   
     const leetcodeResponse = await populateDataOfContestAndPerformance(
@@ -404,28 +421,28 @@ const getDataOfStudent = async (rollNo, year, branch) => {
       50, 1, 15
     );
   
-    currStudent.leetcode = {
+    student.leetcode = {
       username: student.leetcode.username,
       score: leetcodeResponse.score,
       TotalProblemsSolved: LeetcodeDataOfStudent.UserData.TotalProblemsSolved,
       contests: leetcodeResponse.contests,
     };
   
-    currStudent.codechef = {
+    student.codechef = {
       username: student.codechef.username,
       score: codechefResponse.score,
       TotalProblemsSolved: CodechefDataOfStudent.UserData.TotalProblemsSolved,
       contests: codechefResponse.contests,
     };
   
-    currStudent.codeforces = {
+    student.codeforces = {
       username: student.codeforces.username,
       score: codeforcesResponse.score,
       TotalProblemsSolved: CodeforcesDataOfStudent.UserData.TotalProblemsSolved,
       contests: codeforcesResponse.contests,
     };
   
-    currStudent.interviewbit = {
+    student.interviewbit = {
       username: student.interviewbit.username,
       score: InterviewbitDataOfStudent.score,
       TotalProblemsSolved: InterviewbitDataOfStudent.TotalProblemsSolved,
@@ -438,19 +455,19 @@ const getDataOfStudent = async (rollNo, year, branch) => {
       codeforcesResponse.score +
       InterviewbitDataOfStudent.score;
   
-    currStudent.pastScore = currStudent.totalScore || 0;
-    currStudent.totalScore = totalScore;
+    student.pastScore = student.totalScore || 0;
+    student.totalScore = totalScore;
   
-    currStudent.streak =
-      totalScore > currStudent.pastScore ? currStudent.streak + 1 : 0;
+    student.streak =
+      totalScore > student.pastScore ? student.streak + 1 : 0;
   
     let time;
-    await currStudent.save().then(()=>{
+    await student.save().then(()=>{
       const endTime = new Date();
       time = endTime - startTime;
     })
     return {
-      student: currStudent,
+      student: student,
       timeTaken: time,
       error: false
     }
