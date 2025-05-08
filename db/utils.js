@@ -1,39 +1,52 @@
-const { Students, Contests, Performances } = require('./index.js');
+const { Students, Contests, Performances } = require('./index.js')
+const {
+  fetchLeetCodeDataWithLimit
+} = require('../APIs/v2/utils/leetcodeUtils.js')
+const {
+  fetchCodeforcesContestsData
+} = require('../APIs/v2/utils/codeforcesUtils.js')
+const { scrapeCodeChef } = require('../APIs/v2/utils/codechefUtils.js')
+const { InterviewBitInfo } = require('../APIs/v2/utils/interviewbitUtils.js')
+const { convertDate } = require('../APIs/v2/utils/CommonUtils.js')
+const { get } = require('mongoose')
 
-const { fetchLeetCodeDataWithLimit } = require('../APIs/v2/utils/leetcodeUtils.js');
-const { fetchCodeforcesContestsData } = require('../APIs/v2/utils/codeforcesUtils.js');
-const { scrapeCodeChef } = require('../APIs/v2/utils/codechefUtils.js');
-const { InterviewBitInfo } = require('../APIs/v2/utils/interviewbitUtils.js');
-const { convertDate, formatDate } = require('../APIs/v2/utils/CommonUtils.js');
-const createStudent = async (student) => {
+const createStudent = async student => {
   try {
-    const newStudent = await Students.create(student);
-    return newStudent;
+    const newStudent = await Students.create(student)
+    return newStudent
   } catch (err) {
-    console.error("Error creating student:", err);
-    throw err;
+    console.error('Error creating student:', err)
+    throw err
   }
-};
+}
 
-
-
-
-
-const pushStudents = async (students) => {
+const pushStudents = async students => {
   try {
-
     for (const student of students) {
-      console.log('student: ', student.rollNo);
-      await createStudent(student);
+      console.log('Initializing student: ', student.rollNo)
+      await createStudent(student)
     }
-    return students;
+    return students
   } catch (err) {
-    console.error("Error pushing students:", err);
-    throw err;
+    console.error('Error pushing students:', err)
+    throw err
   }
-};
+}
 
-
+const calculateScore = (
+  totalContestsParticipated,
+  contestMultiple,
+  contestsProblemsSolved,
+  contestProblemMultiple,
+  totalProblemsSolved,
+  problemMultiple
+) => {
+  return Number(
+    totalContestsParticipated * contestMultiple +
+      contestsProblemsSolved * contestProblemMultiple +
+      totalProblemsSolved * problemMultiple
+  )
+}
 
 const populateDataOfContestAndPerformance = async (
   rollNo,
@@ -46,42 +59,36 @@ const populateDataOfContestAndPerformance = async (
   problemMultiple
 ) => {
   try {
-    const student = await Students.findOne({ rollNo });
-    if (!student) return 'Student not found';
+    const student = await Students.findOne({ rollNo })
+    if (!student) return 'Student not found'
 
-    let totalContestsParticipated = PerformancesData.length;
-    let contestsProblemsSolved = 0;
-    let totalProblemsSolved = UserData.TotalProblemsSolved;
-    let score = 0;
+    let totalContestsParticipated = PerformancesData.length
+    let contestsProblemsSolved = 0
+    const contestRefs = []
 
-    const contestRefs = [];
     for (const contest of PerformancesData) {
-      contestsProblemsSolved += contest.problemsSolved;
+      contestsProblemsSolved += contest.problemsSolved
       const currDataOfContest = ContestsData.find(
-        (c) => {
-          if (c === undefined) return false;
-          return c.contestName === contest.contestName
-        }
-      );
+        c => c && c.contestName === contest.contestName
+      )
 
-      if (!currDataOfContest) continue;
+      if (!currDataOfContest) continue
 
       let currentContest = await Contests.findOne({
-        contestName: currDataOfContest.contestName,
-      });
+        contestName: currDataOfContest.contestName
+      })
 
       if (!currentContest) {
-        const newContest = await Contests.create({
+        currentContest = await Contests.create({
           platform,
           contestName: currDataOfContest.contestName,
           date: currDataOfContest.date,
           startTime: convertDate(currDataOfContest.date),
-          link: currDataOfContest.link,
-        });
-        currentContest = newContest;
+          link: currDataOfContest.link
+        })
       }
 
-      contestRefs.push(currentContest._id);
+      contestRefs.push(currentContest._id)
 
       const updateData = {
         rollNo,
@@ -91,395 +98,387 @@ const populateDataOfContestAndPerformance = async (
           rating: contest.rating,
           rank: contest.rank,
           delta: contest.delta,
-        },
-      };
-
-      if (contest.div !== undefined) {
-        updateData.performance.div = contest.div;
+          ...(contest.div !== undefined && { div: contest.div })
+        }
       }
 
       await Performances.updateOne(
         { rollNo, contest: currentContest._id },
         { $set: updateData },
         { upsert: true }
-      );
+      )
     }
 
-    score = calculateScore(
+    const score = calculateScore(
       totalContestsParticipated,
       contestMultiple,
       contestsProblemsSolved,
       contestProblemMultiple,
-      totalProblemsSolved,
+      UserData.TotalProblemsSolved,
       problemMultiple
-    );
+    )
 
-    return { score, contests: contestRefs };
+    return { score, contests: contestRefs }
   } catch (err) {
-    console.error("Error populating contest and performance data:", err);
-    throw err;
+    console.error('Error populating contest and performance data:', err)
+    throw err
   }
-};
-
-function calculateScore(
-  totalContestsParticipated,
-  contestMultiple,
-  contestsProblemsSolved,
-  contestProblemMultiple,
-  totalProblemsSolved,
-  problemMultiple
-) {
-  return (Number(
-    totalContestsParticipated * contestMultiple +
-    contestsProblemsSolved * contestProblemMultiple +
-    totalProblemsSolved * problemMultiple)
-  );
 }
 
+const fetchPlatformData = async (
+  student,
+  platform,
+  fetchFunction,
+  platformKey
+) => {
+  try {
+    const data = await fetchFunction(student[platformKey].username)
+    if (data.error) {
+      console.log(
+        `Error in fetching data for ${platform} ${student[platformKey].username} rollNo: ${student.rollNo}`
+      )
+      return { error: true, data: null }
+    }
+    return { error: false, data }
+  } catch (err) {
+    console.error(`Error fetching ${platform} data for ${student.rollNo}:`, err)
+    return { error: true, data: null }
+  }
+}
 
+const updateStudentPlatformData = async (
+  student,
+  platform,
+  response,
+  platformData,
+  platformKey
+) => {
+  student[platformKey] = {
+    username: student[platformKey].username,
+    score: platform === 'interviewbit' ? platformData.score : response.score,
+    TotalProblemsSolved: platformData.TotalProblemsSolved,
+    ...(platform === 'interviewbit'
+      ? { platformScore: platformData.platformScore }
+      : { contests: response.contests })
+  }
+}
 
-let numberOfStudent = 0;
-async function getDataOfStudents(batches) {
+const processStudentData = async student => {
+  const rollNo = student.rollNo
+  let currStudent = await Students.findOne({ rollNo })
+
+  if (!currStudent) {
+    console.error(`Student with rollNo ${rollNo} not found.`)
+    return false
+  }
+
+  let totalScore = 0
+  currStudent.isError = {
+    leetcode: false,
+    codeforces: false,
+    codechef: false,
+    interviewbit: false
+  }
+
+  // LeetCode
+  let { error, data } = await fetchPlatformData(
+    currStudent,
+    'leetcode',
+    fetchLeetCodeDataWithLimit,
+    'leetcode'
+  )
+  if (!error) {
+    const response = await populateDataOfContestAndPerformance(
+      rollNo,
+      'leetcode',
+      data.ContestsData,
+      data.PerformancesData,
+      data.UserData,
+      50,
+      20,
+      10
+    )
+    await updateStudentPlatformData(
+      currStudent,
+      'leetcode',
+      response,
+      data.UserData,
+      'leetcode'
+    )
+    totalScore += response.score
+  } else {
+    currStudent.isError.leetcode = true
+    await currStudent.save()
+  }
+
+  // CodeChef
+  ({ error, data } = await fetchPlatformData(
+    currStudent,
+    'codechef',
+    scrapeCodeChef,
+    'codechef'
+  ))
+  if (!error) {
+    const response = await populateDataOfContestAndPerformance(
+      rollNo,
+      'codechef',
+      data.ContestsData,
+      data.PerformancesData,
+      data.UserData,
+      20,
+      10,
+      5
+    )
+    await updateStudentPlatformData(
+      currStudent,
+      'codechef',
+      response,
+      data.UserData,
+      'codechef'
+    )
+    totalScore += response.score
+  } else {
+    currStudent.isError.codechef = true
+    await currStudent.save()
+  }
+
+  // Codeforces
+  ({ error, data } = await fetchPlatformData(
+    currStudent,
+    'codeforces',
+    fetchCodeforcesContestsData,
+    'codeforces'
+  ))
+  if (!error) {
+    const response = await populateDataOfContestAndPerformance(
+      rollNo,
+      'codeforces',
+      data.ContestsData,
+      data.PerformancesData,
+      data.UserData,
+      50,
+      1,
+      15
+    )
+    await updateStudentPlatformData(
+      currStudent,
+      'codeforces',
+      response,
+      data.UserData,
+      'codeforces'
+    )
+    totalScore += response.score
+  } else {
+    currStudent.isError.codeforces = true
+    await currStudent.save()
+  }
+
+  // InterviewBit
+  ({ error, data } = await fetchPlatformData(
+    currStudent,
+    'interviewbit',
+    InterviewBitInfo,
+    'interviewbit'
+  ))
+  if (!error) {
+    await updateStudentPlatformData(
+      currStudent,
+      'interviewbit',
+      null,
+      data,
+      'interviewbit'
+    )
+    totalScore += data.score
+  } else {
+    currStudent.isError.interviewbit = true
+    await currStudent.save()
+  }
+
+  currStudent.pastScore = currStudent.totalScore || 0
+  currStudent.totalScore = totalScore
+  currStudent.streak =
+    totalScore > currStudent.pastScore ? currStudent.streak + 1 : 0
+
+  await currStudent.save()
+  return true
+}
+
+let numberOfStudent = 0
+async function getDataOfStudents (batches) {
   try {
     for (const batch of batches) {
       for (const student of batch) {
-        numberOfStudent++;
-        console.log('Processing Student:', numberOfStudent, student.rollNo);
-
-        const rollNo = student.rollNo;
-        let currStudent = await Students.findOne({ rollNo });
-
-        if (!currStudent) {
-          console.error(`Student with rollNo ${rollNo} not found.`);
-          continue;
-        }
-        const LeetcodeDataOfStudent = await fetchLeetCodeDataWithLimit(
-          student.leetcode.username
-        );
-        if (LeetcodeDataOfStudent.error) {
-          console.log('Error in fetching data for LC ', student.leetcode.username, " rollNo: ", rollNo);
-          currStudent.isError.leetcode = true;
-          await currStudent.save();
-          continue;
-        }
-        const CodechefDataOfStudent = await scrapeCodeChef(
-          student.codechef.username
-        );
-        if (CodechefDataOfStudent.error) {
-          console.log('Error in fetching data for CC ', student.codechef.username, " rollNo: ", rollNo);
-          currStudent.isError.codechef = true;
-          await currStudent.save();
-          continue;
-        }
-        const CodeforcesDataOfStudent = await fetchCodeforcesContestsData(
-          student.codeforces.username
-        );
-        if (CodeforcesDataOfStudent.error) {
-          console.log('Error in fetching data for CF ', student.codeforces.username, " rollNo: ", rollNo);
-          currStudent.isError.codeforces = true;
-          await currStudent.save();
-          continue;
-        }
-        const InterviewbitDataOfStudent = await InterviewBitInfo(
-          student.interviewbit.username
-        );
-        console.log('InterviewbitDataOfStudent: ', InterviewbitDataOfStudent);
-        if (InterviewbitDataOfStudent.error) {
-          console.log('InterviewbitDataOfStudent.error: ', InterviewbitDataOfStudent.error);
-          console.log('Error in fetching data for IB ', student.interviewbit.username, " rollNo: ", rollNo);
-          console.log('boolean err', currStudent.isError);
-          currStudent.isError.interviewbit = true;
-          await currStudent.save();
-          continue;
-        }
-
-        currStudent.isError = {
-          leetcode: false,
-          codeforces: false,
-          codechef: false,
-          interviewbit: false
-        }
-
-        const leetcodeResponse = await populateDataOfContestAndPerformance(
-          rollNo,
-          'leetcode',
-          LeetcodeDataOfStudent.ContestsData,
-          LeetcodeDataOfStudent.PerformancesData,
-          LeetcodeDataOfStudent.UserData,
-          50, 20, 10
-        );
-
-
-        const codechefResponse = await populateDataOfContestAndPerformance(
-          rollNo,
-          'codechef',
-          CodechefDataOfStudent.ContestsData,
-          CodechefDataOfStudent.PerformancesData,
-          CodechefDataOfStudent.UserData,
-          20, 10, 5
-        );
-
-
-        const codeforcesResponse = await populateDataOfContestAndPerformance(
-          rollNo,
-          'codeforces',
-          CodeforcesDataOfStudent.ContestsData,
-          CodeforcesDataOfStudent.PerformancesData,
-          CodeforcesDataOfStudent.UserData,
-          50, 1, 15
-        );
-
-
-
-        currStudent.leetcode = {
-          username: student.leetcode.username,
-          score: leetcodeResponse.score,
-          TotalProblemsSolved: LeetcodeDataOfStudent.UserData.TotalProblemsSolved,
-          contests: leetcodeResponse.contests,
-        };
-
-        currStudent.codechef = {
-          username: student.codechef.username,
-          score: codechefResponse.score,
-          TotalProblemsSolved: CodechefDataOfStudent.UserData.TotalProblemsSolved,
-          contests: codechefResponse.contests,
-        };
-
-        currStudent.codeforces = {
-          username: student.codeforces.username,
-          score: codeforcesResponse.score,
-          TotalProblemsSolved: CodeforcesDataOfStudent.UserData.TotalProblemsSolved,
-          contests: codeforcesResponse.contests,
-        };
-
-        currStudent.interviewbit = {
-          username: student.interviewbit.username,
-          score: InterviewbitDataOfStudent.score,
-          TotalProblemsSolved: InterviewbitDataOfStudent.TotalProblemsSolved,
-          platformScore: InterviewbitDataOfStudent.platformScore,
-        };
-
-        const totalScore =
-          leetcodeResponse.score +
-          codechefResponse.score +
-          codeforcesResponse.score +
-          InterviewbitDataOfStudent.score;
-
-        currStudent.pastScore = currStudent.totalScore || 0;
-        currStudent.totalScore = totalScore;
-
-        currStudent.streak =
-          totalScore > currStudent.pastScore ? currStudent.streak + 1 : 0;
-
-        await currStudent.save();
+        numberOfStudent++
+        console.log('Processing Student:', numberOfStudent, student.rollNo)
+        await processStudentData(student)
       }
     }
   } catch (err) {
-    console.error("Error updating student data:", err);
-    throw err;
+    console.error('Error updating student data:', err)
+    throw err
   }
 }
 
-async function makeBatches() {
+async function refreshData () {
   try {
-    const students = await Students.find();
-    const batches = [];
-    const batchSize = 40;
+    const students = await Students.find()
+    const batches = []
+    const batchSize = 40
 
     for (let i = 0; i < students.length; i += batchSize) {
-      batches.push(students.slice(i, i + batchSize));
+      batches.push(students.slice(i, i + batchSize))
     }
 
-    await getDataOfStudents(batches);
-    console.log('All Students Data Updated');
-    return batches;
+    await getDataOfStudents(batches)
+    console.log('All Students Data Updated')
+    return batches
   } catch (err) {
-    console.error("Error creating batches:", err);
-    throw err;
+    console.error('Error creating batches:', err)
+    throw err
   }
 }
 
-const addStudentIntoDB = async (student) => {
+const addStudentIntoDB = async student => {
   try {
-    const newStudent = await Students.create(student);
-    return newStudent;
+    const newStudent = await Students.create(student)
+    return newStudent
   } catch (err) {
-    console.error("Error adding student into DB:", err);
-    throw err;
+    console.error('Error adding student into DB:', err)
+    throw err
   }
 }
 
-
-// getDataofStudent is for only one student with time of execution calculated and sent 
 const getDataOfStudent = async (rollNo, year, branch) => {
-  try{
-    console.log('Processing Student:', rollNo);
-    const startTime = new Date();
-  
-    const student = await Students.findOne({ rollNo, year, branch });
-  
+  try {
+    console.log('Processing Student:', rollNo)
+    const startTime = new Date()
+
+    const student = await Students.findOne({ rollNo, year, branch })
     if (!student) {
-      console.error(`Student with rollNo ${rollNo} ${year} ${branch} not found.`);
-      return{
+      console.error(
+        `Student with rollNo ${rollNo} ${year} ${branch} not found.`
+      )
+      return {
         error: true,
         message: `Student with rollNo ${rollNo} ${year} ${branch} not found.`
-      };
+      }
     }
 
-    const errorObject = student.isError;
-    if (errorObject.leetcode || errorObject.codeforces || errorObject.codechef || errorObject.interviewbit) {
-      console.log('Error in fetching data for student: ', rollNo, errorObject);
+    const errorObject = student.isError
+    if (Object.values(errorObject).some(val => val)) {
+      console.log('Error in fetching data for student: ', rollNo, errorObject)
       return {
         error: true,
         message: 'Error in fetching data for student',
-        errorObject: errorObject
-      }
-    }
-  
-    const LeetcodeDataOfStudent = await fetchLeetCodeDataWithLimit(
-      student.leetcode.username
-    );
-    if (LeetcodeDataOfStudent.error) {
-      console.log('Error in fetching data for LC ', student.leetcode.username, " rollNo: ", rollNo);
-      student.isError.leetcode = true;
-      await student.save();
-      return {
-        error: true,
-        message: 'Error in fetching data for LC'
-      }
-    }
-    const CodechefDataOfStudent = await scrapeCodeChef(
-      student.codechef.username
-    );
-    if (CodechefDataOfStudent.error) {
-      console.log('Error in fetching data for CC ', student.codechef.username, " rollNo: ", rollNo);
-      student.isError.codechef = true;
-      await student.save();
-      return {
-        error: true,
-        message: 'Error in fetching data for CC'
-      }
-    }
-    const CodeforcesDataOfStudent = await fetchCodeforcesContestsData(
-      student.codeforces.username
-    );
-    if (CodeforcesDataOfStudent.error) {
-      console.log('Error in fetching data for CF ', student.codeforces.username, " rollNo: ", rollNo);
-      student.isError.codeforces = true;
-      await student.save();
-      return {
-        error: true,
-        message: 'Error in fetching data for CF'
-      }
-    }
-    const InterviewbitDataOfStudent = await InterviewBitInfo(
-      student.interviewbit.username
-    );
-    if (InterviewbitDataOfStudent.error) {
-      console.log('Error in fetching data for IB ', student.interviewbit.username, " rollNo: ", rollNo);
-      student.isError.interviewbit = true;
-      await student.save();
-      return {
-        error: true,
-        message: 'Error in fetching data for IB'
+        errorObject
       }
     }
 
-    student.isError = {
-      leetcode: false,
-      codeforces: false,
-      codechef: false,
-      interviewbit: false
+    const success = await processStudentData(student)
+    if (!success) {
+      return {
+        error: true,
+        message: 'Error in updating student data'
+      }
     }
-  
-    const leetcodeResponse = await populateDataOfContestAndPerformance(
-      rollNo,
-      'leetcode',
-      LeetcodeDataOfStudent.ContestsData,
-      LeetcodeDataOfStudent.PerformancesData,
-      LeetcodeDataOfStudent.UserData,
-      50, 20, 10
-    );
-  
-  
-    const codechefResponse = await populateDataOfContestAndPerformance(
-      rollNo,
-      'codechef',
-      CodechefDataOfStudent.ContestsData,
-      CodechefDataOfStudent.PerformancesData,
-      CodechefDataOfStudent.UserData,
-      20, 10, 5
-    );
-  
-  
-    const codeforcesResponse = await populateDataOfContestAndPerformance(
-      rollNo,
-      'codeforces',
-      CodeforcesDataOfStudent.ContestsData,
-      CodeforcesDataOfStudent.PerformancesData,
-      CodeforcesDataOfStudent.UserData,
-      50, 1, 15
-    );
-  
-    student.leetcode = {
-      username: student.leetcode.username,
-      score: leetcodeResponse.score,
-      TotalProblemsSolved: LeetcodeDataOfStudent.UserData.TotalProblemsSolved,
-      contests: leetcodeResponse.contests,
-    };
-  
-    student.codechef = {
-      username: student.codechef.username,
-      score: codechefResponse.score,
-      TotalProblemsSolved: CodechefDataOfStudent.UserData.TotalProblemsSolved,
-      contests: codechefResponse.contests,
-    };
-  
-    student.codeforces = {
-      username: student.codeforces.username,
-      score: codeforcesResponse.score,
-      TotalProblemsSolved: CodeforcesDataOfStudent.UserData.TotalProblemsSolved,
-      contests: codeforcesResponse.contests,
-    };
-  
-    student.interviewbit = {
-      username: student.interviewbit.username,
-      score: InterviewbitDataOfStudent.score,
-      TotalProblemsSolved: InterviewbitDataOfStudent.TotalProblemsSolved,
-      platformScore: InterviewbitDataOfStudent.platformScore,
-    };
-  
-    const totalScore =
-      leetcodeResponse.score +
-      codechefResponse.score +
-      codeforcesResponse.score +
-      InterviewbitDataOfStudent.score;
-  
-    student.pastScore = student.totalScore || 0;
-    student.totalScore = totalScore;
-  
-    student.streak =
-      totalScore > student.pastScore ? student.streak + 1 : 0;
-  
-    let time;
-    await student.save().then(()=>{
-      const endTime = new Date();
-      time = endTime - startTime;
-    })
+
+    const endTime = new Date()
     return {
-      student: student,
-      timeTaken: time,
+      student,
+      timeTaken: endTime - startTime,
       error: false
     }
-  }catch(err){
-    console.error("Error updating student data:", err);
+  } catch (err) {
+    console.error('Error updating student data:', err)
     return {
       error: true,
       message: 'Error in updating student data'
     }
   }
-  
-  
 }
 
-module.exports = { createStudent, pushStudents, makeBatches, addStudentIntoDB, getDataOfStudent };
+const updateStudentsByRollNumbers = async rollNumbers => {
+  try {
+    const results = []
+    const students = await Students.find({ rollNo: { $in: rollNumbers } })
+
+    if (students.length === 0) {
+      console.log('No students found for the provided roll numbers.')
+      return {
+        error: true,
+        message: 'No students found for the provided roll numbers.',
+        results: []
+      }
+    }
+
+    for (const student of students) {
+      console.log(`Processing Student: ${student.rollNo}`)
+      const success = await processStudentData(student)
+      results.push({
+        rollNo: student.rollNo,
+        success,
+        message: success
+          ? 'Student data updated successfully'
+          : 'Failed to update student data'
+      })
+    }
+
+    const failedUpdates = results.filter(result => !result.success)
+    if (failedUpdates.length > 0) {
+      console.log(
+        `Some students failed to update: ${failedUpdates
+          .map(r => r.rollNo)
+          .join(', ')}`
+      )
+    } else {
+      console.log('All specified students updated successfully.')
+    }
+
+    return {
+      error: failedUpdates.length > 0,
+      message:
+        failedUpdates.length > 0
+          ? 'Some students failed to update'
+          : 'All students updated successfully',
+      results
+    }
+  } catch (err) {
+    console.error('Error updating students by roll numbers:', err)
+    return {
+      error: true,
+      message: 'Error updating students by roll numbers',
+      results: []
+    }
+  }
+}
+
+// refresh by branch & year
+const refreshByBranchAndYear = async (year, branch) => {
+  try {
+    const students = await Students.find({
+      year: year,
+      branch: branch
+    })
+    const batches = []
+    const batchSize = 40
+    for (let i = 0; i < students.length; i += batchSize) {
+      batches.push(students.slice(i, i + batchSize))
+    }
+    await getDataOfStudents(batches)
+    console.log('Initialized refresh for branch:', branch, 'year:', year)
+    return students
+  } catch (err) {
+    console.error('Error creating batches:', err)
+    throw err
+  }
+}
+
+module.exports = {
+  createStudent,
+  pushStudents,
+  refreshData,
+  addStudentIntoDB,
+  getDataOfStudent,
+  updateStudentsByRollNumbers,
+  refreshByBranchAndYear
+}

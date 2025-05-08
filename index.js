@@ -10,7 +10,7 @@ app.use(express.json()); // Middleware to parse JSON request bodies
 
 const { Contests } = require('./db/index.js');
 const { Students } = require('./db/index.js');
-const { pushStudents, createStudent, makeBatches } = require('./db/utils.js');
+const { pushStudents, createStudent, refreshData } = require('./db/utils.js');
 const Batch22 = require('./test22.json');
 const Batch21 = require('./test21.json');
 const falseData = require('./FalseData.json')
@@ -21,7 +21,7 @@ mongoose
   .then(() => console.log('Connected to MongoDB successfully'))
   .then(() => {
     // RUN THIS TO UPDATE BATCHES
-    // makeBatches().then(() => {
+    // refreshData().then(() => {
     //   console.log('Batches created')
     // });
     run();
@@ -77,8 +77,8 @@ function run() {
   // FOR ADDING STUDENTS IN DB FROM JSON
   // pushStudents(Batch22);
   // pushStudents(Batch21);
+  
   // pushStudents(falseData);
-
   const port = process.env.PORT || 4000;
   app.listen(port, () => {
     console.log(`Server running on port http://localhost:${port}`);

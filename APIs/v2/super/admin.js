@@ -3,6 +3,29 @@ const express = require('express');
 router.use(express.json());
 const { Users, Students, Performances, Actions, Views } = require('../../../db/index.js');
 const adminMiddleware = require('../auth/adminMiddleware.js');
+const {updateStudentsByRollNumbers,refreshData,refreshByBranchAndYear} = require('../../../db/utils.js');
+require('dotenv').config();
+
+router.post('/vmRefresh',async (req, res) => {
+    const {key} = req.body;
+    if(key !== process.env.REFRESH_KEY){
+        console.log("Unauthorized access to refresh data from VM");
+        return res.status(401).json({ message: 'Unauthorized', error: true });
+    }
+    try {
+      refreshData();
+      const actionLog = await Actions.create({
+          action: `Full refresh started from VM`,
+          username: "VM",
+          time: new Date()
+      })
+      res.status(200).json({ message: 'Refresh started', error: false });
+    } catch (error) {
+      console.error('Error refreshing data:', error);
+      res.status(500).json({ message: 'Error refreshing data', error: true });
+    }
+});
+
 
 router.use(adminMiddleware);
 
@@ -198,48 +221,6 @@ router.put('/refreshStudent', async(req, res)=>{
         })
     }
 });
-
-// Refresh Data of many Students {[rollNo, year, branch]} => message
-router.put('/refreshStudents', async(req, res)=>{
-    try{
-        const students = req.body.students;
-        let refreshedStudents = [];
-        let timeTaken = 0;
-        for(let i=0; i<students.length; i++){
-            const refreshedStudent = await getDataOfStudent(students[i].rollNo, students[i].year, students[i].branch);
-            console.log(refreshedStudent)
-            if(refreshedStudent.error){
-                res.send({
-                    message: refreshedStudent.message,
-                    error: true
-                })
-                return;
-            }
-            refreshedStudents.push(refreshedStudent.student);
-            timeTaken += refreshedStudent.timeTaken;
-        }
-        const actionLog = await Actions.create({
-            action: `Refreshed data of ${students.length} students`,
-            username: req.username,
-            time: new Date()
-        })
-        res.send({
-            message: "Data refreshed successfully",
-            students: refreshedStudents,
-            timeTaken,
-            error: false
-        })
-    }catch(err){
-        console.error(err);
-        res.status(500).send({
-            message: err,
-            error: true
-        })
-    }
-})
-
-
-
 
 // delete a student {year, branch, rollNo} => {message}
 router.delete('/deleteStudent', async (req, res) => {
@@ -487,5 +468,59 @@ router.post('/viewStudents', async(req,res)=>{
     }   
 })
 
+router.post('/fullRefresh',async (req, res) => {
+  try {
+    refreshData();
+    const actionLog = await Actions.create({
+        action: `Full refresh started`,
+        username: req.username,
+        time: new Date()
+    })
+    res.status(200).json({ message: 'Refresh started', error: false });
+  } catch (error) {
+    console.error('Error refreshing data:', error);
+    res.status(500).json({ message: 'Error refreshing data', error: true });
+  }
+});
+
+
+router.post('/rollRefresh', async (req, res) => {
+    const { rollNumbers } = req.body;
+    if (!Array.isArray(rollNumbers) || rollNumbers.length === 0) {
+      return res.status(400).json({ error: true, message: 'Invalid or empty rollNumbers array' });
+    }
+    try {
+        const result = updateStudentsByRollNumbers(rollNumbers);
+        const actionLog = await Actions.create({
+            action: `Refreshed data of students ${rollNumbers.join(', ')}`,
+            username: req.username,
+            time: new Date()
+        })
+        res.status(200).json({ message: 'Refresh started', error: false });
+    } catch (error) {
+        console.error('Error refreshing data:', error);
+        res.status(500).json({ message: 'Error refreshing data', error: true });
+    }
+});
+
+// refresh by batch & year
+router.post('/batchRefreshByBatch', async (req, res) => {
+    const { year, branch } = req.body;
+    if (!year || !branch) {
+        return res.status(400).json({ error: true, message: 'Invalid year or branch' });
+    }
+    try {
+        const result = await refreshByBranchAndYear(year, branch);
+        const actionLog = await Actions.create({
+            action: `Refreshed data of batch ${year}-${branch}`,
+            username: req.username,
+            time: new Date()
+        })
+        res.status(200).json({ message: 'Refresh started', error: false });
+    } catch (error) {
+        console.error('Error refreshing data:', error);
+        res.status(500).json({ message: 'Error refreshing data', error: true });
+    }
+});
 
 module.exports = router;

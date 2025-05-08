@@ -5,8 +5,7 @@ const {formatDate} = require('../utils/CommonUtils')
 
 // Create a Bottleneck limiter
 const limiter = new Bottleneck({
-    minTime: 100, // Minimum time between requests
-    // minTime: 10000, // Minimum time between requests
+    minTime: 10000, // Minimum time between requests
     maxConcurrent: 3 // Maximum number of concurrent requests
 });
 
