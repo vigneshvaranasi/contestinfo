@@ -85,7 +85,7 @@ router.post('/students', async (req, res) => {
 })
 
 
-const { createStudent } = require('./superUtils.js');
+const { createStudent, getStudentsOfView } = require('./superUtils.js');
 const { getDataOfStudent } = require('../../../db/utils.js');
 // create a student {year, branch, student} => {message}
 router.post('/newStudent', async (req, res) => {
@@ -522,5 +522,33 @@ router.post('/batchRefreshByBatch', async (req, res) => {
         res.status(500).json({ message: 'Error refreshing data', error: true });
     }
 });
+
+// refresh a view {name} => {message}
+router.post('/refreshView',async(req,res)=>{
+    const {name} = req.body;
+    // console.log('name: ', name);
+    if(!name){
+        return res.status(400).json({ error: true, message: 'Invalid view name' });
+    }
+    try{
+        const studentsOfView = await getStudentsOfView(name);
+        if(studentsOfView.error){
+            return res.status(404).json({ error: true, message: studentsOfView.message });
+        }
+        const result = updateStudentsByRollNumbers(studentsOfView.students);
+        const actionLog = await Actions.create({
+            action: `Refreshed data of view ${name}`,
+            username: req.username||"VM",
+            time: new Date()
+        })
+        res.status(200).json({ message: 'Refresh started', error: false });
+    }catch(err){
+        console.error(err);
+        res.status(500).send({
+            message: "Error",
+            error: true
+        })
+    }
+})
 
 module.exports = router;

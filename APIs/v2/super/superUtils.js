@@ -1,4 +1,4 @@
-const { Students, Contests, Performances } = require('../../../db/index.js');
+const { Students, Contests, Performances, Views } = require('../../../db/index.js');
 
 async function createStudent(student) {
     try {
@@ -13,6 +13,29 @@ async function createStudent(student) {
         return { error: true, message: err };
     }
 }
+async function getStudentsOfView(viewName){
+    try{
+        const students = await Views.findOne({
+            name:viewName
+        },{
+            rollNumbers:1,
+            _id:0
+        });
+        if(!students){
+            return {error:true,message:"View not found"};
+        }
+        return {
+            error:false,
+            students: students.rollNumbers
+        };
+    }catch(err){
+        console.error("Error getting students of view:", err);
+        return { error: true, message:err};
+    }
+}
 
 
-module.exports = {createStudent};
+
+
+
+module.exports = {createStudent, getStudentsOfView};

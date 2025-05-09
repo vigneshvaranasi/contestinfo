@@ -27,7 +27,7 @@ router.get('/', async (req, res) => {
         })
             .populate('contest')
             .lean();
-        console.log(studentData)
+        // console.log(studentData)
         let performanceDataMap = new Map();
         performanceData.forEach((perf) => {
             const key = `{${perf.rollNo}-${perf.contest.contestName}}`;
