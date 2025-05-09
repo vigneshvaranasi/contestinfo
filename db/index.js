@@ -252,6 +252,44 @@ const ActionSchema = new mongoose.Schema({
     }
 })
 
+const UpcomingContestSchema = new mongoose.Schema({
+    href: {
+        type: String,
+        required: true
+    },
+    duration: {
+        type: Number,
+        required: true
+    },
+    end: {
+        type: Date,
+        required: true
+    },
+    event: {
+        type: String,
+        required: true
+    },
+    host: {
+        type: String,
+        required: true
+    },
+    platform: {
+        type: String,
+        required: true
+    },
+    resource: {
+        type: String,
+        required: true
+    },
+    resource_id:{
+        type:Number,
+        required:true
+    },
+    start: {
+        type: Date,
+        required: true
+    }
+})
 
 const Students = mongoose.model('Students',StudentsSchema);
 const Contests = mongoose.model('Contests',ContestsSchema)
@@ -259,5 +297,6 @@ const Performances = mongoose.model('Performances',PerformancesSchema)
 const Users = mongoose.model('User',UserSchema);
 const Views = mongoose.model('Views',ViewSchema);
 const Actions = mongoose.model('Action',ActionSchema);
+const UpcomingContest = mongoose.model('UpcomingContest',UpcomingContestSchema);
 
-module.exports = {Students,Contests,Performances,Users, Views, Actions}
+module.exports = {Students,Contests,Performances,Users, Views, Actions, UpcomingContest};

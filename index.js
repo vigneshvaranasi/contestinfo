@@ -74,6 +74,10 @@ function run() {
   const auth = require('./APIs/v2/auth/auth.js');
   app.use('/v2/auth', auth);
 
+  const { router: getUpcomingRouter } = require('./APIs/v2/GetUpcoming.js');
+  app.use('/v2/getUpcoming', getUpcomingRouter);
+
+
   // FOR ADDING STUDENTS IN DB FROM JSON
   // pushStudents(Batch22);
   // pushStudents(Batch21);
