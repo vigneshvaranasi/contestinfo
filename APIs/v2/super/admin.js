@@ -510,7 +510,7 @@ router.post('/batchRefreshByBatch', async (req, res) => {
         return res.status(400).json({ error: true, message: 'Invalid year or branch' });
     }
     try {
-        const result = await refreshByBranchAndYear(year, branch);
+        const result = refreshByBranchAndYear(year, branch);
         const actionLog = await Actions.create({
             action: `Refreshed data of batch ${year}-${branch}`,
             username: req.username,
