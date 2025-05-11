@@ -1,0 +1,34 @@
+[
+    {
+        "id": 1,
+        "name": "Pavan Kumar Chennupati",
+        "roll": "22501A05E0",
+        "leetcode": "pavankc",
+        "codechef": "pavankc",
+        "codeforces": "pavankc"
+    },
+    {
+        "id": 2,
+        "name": "Vignesh Varanasi",
+        "roll": "22501A05J1",
+        "leetcode": "vvsvignesh",
+        "codechef": "vvsvignesh",
+        "codeforces": "vvsvignesh"
+    },
+    {
+        "id": 3,
+        "name": "Shaik Fakruddin",
+        "roll": "22501A05G1",
+        "leetcode": "skfakruddin21",
+        "codechef": "fakruddin2145",
+        "codeforces": "shaikfakruddin2145"
+    },
+    {
+        "id": 4,
+        "name": "Eswar Aditya",
+        "roll": "22501A05J8",
+        "leetcode": "yeswaraditya3006",
+        "codechef": "yeswaraditya13",
+        "codeforces": "eswar1357"
+    }
+]
