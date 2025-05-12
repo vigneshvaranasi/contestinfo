@@ -128,6 +128,61 @@ router.post('/newStudent', async (req, res) => {
     }
 });
 
+// create a student {year, branch, students} => {message}
+router.post('/newStudents', async(req,res)=>{
+    try{
+        const {year, branch, students} = req.body;
+        console.log(year, branch)
+        console.log(students)
+        const newStudents = [];
+        for(let i=0;i<students.length;i++){
+            const student = students[i];
+            student.year = year;
+            student.branch = branch;
+            const existingStudent = await Students.findOne({ rollNo: student.rollNo });
+            if (existingStudent) {
+                console.log(`Student ${student.rollNo} already exists, skipping.`);
+                continue;
+            }
+            const newStudent = await createStudent(student);
+            if (newStudent.error) {
+                res.send({
+                    message: newStudent.message,
+                    error: true
+                });
+                return;
+            }
+            console.log(`Student ${student.rollNo} created successfully.`);
+            newStudents.push(newStudent.newStudent);
+        }
+        const actionLog = await Actions.create({
+            action: `Created students ${newStudents.map(student => student.rollNo).join(', ')}`,
+            username: req.username,
+            time: new Date()
+        });
+        console.log(`All students created successfully.`);
+        if(newStudents.length!==students){
+            res.send({
+                message:"Student(s) are already existent, remaining are added",
+                students:newStudents,
+                error:false
+            })
+            return;
+        }
+        res.send({
+            message: "Students created successfully",
+            students: newStudents,
+            error: false
+        });
+    }catch(err){
+        console.error(err);
+        res.send({
+            message: "Error Adding students",
+            error: true
+        });
+    }
+});
+
 // update a student {year, branch, student} => {message}
 router.post('/updateStudent', async (req, res) => {
     try {
