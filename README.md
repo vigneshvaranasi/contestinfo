@@ -5,17 +5,20 @@ Scrapes coding contest data, analyzes student performance, and delivers stats, r
 - **API Link** → [https://api.trackcode.in](https://api.trackcode.in/)
 - **Frontend Repository** → https://github.com/pavancos/trackcode
 - **Website** → [https://trackcode.in](https://trackcode.in/)
-
 ---
 
 ## Table of Contents
 
-1. [Overview](https://www.notion.so/Backend-README-1efc23d07d2e80e6b51af0a0acc5d517?pvs=21)
-2. [Quick Start](https://www.notion.so/Backend-README-1efc23d07d2e80e6b51af0a0acc5d517?pvs=21)
-3. [Local Development Setup](https://www.notion.so/Backend-README-1efc23d07d2e80e6b51af0a0acc5d517?pvs=21)
-4. [API Endpoints](https://www.notion.so/Backend-README-1efc23d07d2e80e6b51af0a0acc5d517?pvs=21)
-5. [Achievements](https://www.notion.so/Backend-README-1efc23d07d2e80e6b51af0a0acc5d517?pvs=21)
-6. [Contributors](https://www.notion.so/Backend-README-1efc23d07d2e80e6b51af0a0acc5d517?pvs=21)
+1. [Overview](#overview)
+   - [Brief Description](#brief-description)
+   - [Purpose of the Backend](#purpose-of-the-backend)
+   - [Tech Stack](#tech-stack)
+2. [Quick Start](#quick-start)
+   - [Clone Instructions](#clone-instructions)
+   - [Environment Variables (.env)](#environment-variables-env)
+   - [Run Commands](#run-commands)
+3. [API Endpoints](#api-endpoints)
+4. [Contributors](#contributors)
 
 ---
 
@@ -41,6 +44,7 @@ TrackCode backend service powers a coding analytics platform by scraping and pro
 
 ## Quick Start
 
+### Clone Instructions
 ```bash
 # Clone the repo
 git clone <https://github.com/vigneshvaranasi/trackcode-api.git>
@@ -56,20 +60,7 @@ cp .env.example .env
 npm run dev
 ```
 
-(Optional) If you want to test APIs externally, use a tool like **Postman** and hit the endpoints listed below.
-
-Or use the backend integrated directly in the TrackCode frontend app for contest analysis and stats visualization.
-
 ---
-
-## Local Development Setup
-
-### Clone Instructions
-
-```bash
-git clone https://github.com/vigneshvaranasi/trackcode-api.git
-cd trackcode-api
-```
 
 ### Environment Variables (`.env`)
 
@@ -82,34 +73,17 @@ API_KEY=your_clist_api_key
 REFRESH_KEY=your_refresh_secret
 ```
 
-> Refer to .env.example in the repo.
-> 
-
 ### Run Commands
 
 ```bash
 npm run dev
 ```
-
-### Database Setup
-
-- You’ll need a **MongoDB** instance. You can use:
-    - [MongoDB Atlas](https://www.mongodb.com/cloud/atlas)
-    - A local MongoDB server
-
-> Make sure to add your connection string to the .env file.
-> 
-
-### Dev Tools
-
-- [Postman](https://www.postman.com/) – Test API endpoints
-
 ---
 
 ## API Endpoints
 
 > API Overview → **http://localhost:8000/v2**
-> 
+
 
 | Module | Base Path | Description |
 | --- | --- | --- |
@@ -122,14 +96,14 @@ npm run dev
 | Developer | /dev | Endpoints for developer-specific operations |
 
 > Health Check Route
-> 
+
 
 | Method | Path | Description | Auth Required |
 | --- | --- | --- | --- |
 | GET | / | Welcome message for the Contest Info Server V2 | No |
 
-> API for getting batch details → **http:localhost:8000/v2/batch**
-> 
+> API for getting batch details → **http://localhost:8000/v2/batch**
+
 
 | Method | Path | Description | Auth Required |
 | --- | --- | --- | --- |
@@ -143,7 +117,6 @@ npm run dev
 | GET | / | Fetch all students with performance data | No |
 
 > API for getting student details → **http://localhost:8000/v2/student**
-> 
 
 | Method | Path | Description | Auth Required |
 | --- | --- | --- | --- |
@@ -151,7 +124,7 @@ npm run dev
 | GET | / | Fetch student details by roll number | No |
 
 > API for getting contest details → **http://localhost:8000/v2/contest**
-> 
+
 
 | Method | Path | Description | Auth Required |
 | --- | --- | --- | --- |
@@ -163,7 +136,7 @@ npm run dev
 | GET | /contestName/branch | Fetch contest participants filtered by year and branch | No |
 
 > API for getting upcoming contests → **http://localhost:8000/v2/getUpcoming**
-> 
+
 
 | Method | Path | Description | Auth Required |
 | --- | --- | --- | --- |
@@ -171,7 +144,7 @@ npm run dev
 | GET | / | Fetch upcoming contests starting after the current date | No |
 
 > API for authentication → **http://localhost:8000/v2/auth**
-> 
+
 
 | Method | Path | Description | Auth Required |
 | --- | --- | --- | --- |
@@ -179,7 +152,7 @@ npm run dev
 | POST | /verify | Verify the validity of a JWT token | Yes |
 
 > API for admin operations → **http://localhost:8000/v2/admin**
-> 
+
 
 | Method | Path | Description | Auth Required |
 | --- | --- | --- | --- |
@@ -202,7 +175,7 @@ npm run dev
 | POST | /refreshView | Refresh data of a specific view | Yes |
 
 > API for developer operations → **http://localhost:8000/v2/dev**
-> 
+
 
 | Method | Path | Description | Auth Required |
 | --- | --- | --- | --- |
@@ -213,11 +186,9 @@ npm run dev
 ## Contributors
 
 Built by DevDuo
-
 - [Vignesh Varanasi](https://github.com/vigneshvaranasi)
 - [Pavan Kumar Chennupati](https://github.com/pavancos)
 
 ---
 
-> 💡 Feel free to contribute or fork the project if you're interested in backend systems for developer platforms!
->
+> Feel free to contribute or fork the project if you're interested in backend systems for developer platforms!

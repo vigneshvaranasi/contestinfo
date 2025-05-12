@@ -11,9 +11,9 @@ app.use(express.json()); // Middleware to parse JSON request bodies
 const { Contests } = require('./db/index.js');
 const { Students } = require('./db/index.js');
 const { pushStudents, createStudent, refreshData } = require('./db/utils.js');
-const Batch22 = require('./test22.json');
-const Batch21 = require('./test21.json');
-const falseData = require('./FalseData.json')
+// const Batch22 = require('./test22.json');
+// const Batch21 = require('./test21.json');
+// const falseData = require('./FalseData.json')
 const dbURL = process.env.DB_URL; // Use environment variable
 const { getStudentsOfView } = require('./APIs/v2/super/superUtils.js');
 mongoose
