@@ -42,7 +42,7 @@ async function getSolved(username, contestId) {
         solved += res.result.length;
         return solved;
     } catch (err) {
-        console.log(err);
+        console.error(err);
     }
 }
 
@@ -129,7 +129,7 @@ const fetchCodeforcesProblemsData = async (username) => {
             })
         );
         if (response.status !== 200) {
-            console.log(`Rate limit or service unavailable for Codeforces ${username}.`);
+            console.error(`Rate limit or service unavailable for Codeforces ${username}.`);
             await delay(2000); // Fixed delay before retrying
             return fetchCodeforcesProblemsData(username); // Retry once
         }

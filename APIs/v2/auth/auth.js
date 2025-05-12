@@ -11,7 +11,6 @@ dotenv.config();
 
 // login
 router.post('/login', async (req, res) => {
-    // console.log(req);
     const { username, password } = req.body;
     try {
         // verify if the user exists
@@ -33,7 +32,7 @@ router.post('/login', async (req, res) => {
         const token = jwt.sign({ username: user.username, role: user.role }, process.env.JWT_SECRET);
         return res.send({ message: "Logged in successfully", token: token, username: user.username, role: user.role });
     } catch (err) {
-        console.log(err);
+        console.error(err);
         return res.send({ message: "Error", error:true })
     }
 })
@@ -55,7 +54,7 @@ router.post('/verify', async (req, res) => {
         }
         return res.send({ message: "Valid Token",token:token, username: decoded.username, role: decoded.role, error:false });
     } catch (err) {
-        console.log(err);
+        console.error(err);
         return res.send({ message: "Error", error:true })
     }
 })

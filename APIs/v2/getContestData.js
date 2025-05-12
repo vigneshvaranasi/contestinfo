@@ -23,7 +23,6 @@ router.get('/getContests', async (req, res) => {
 
 router.get('/', async (req, res) => {
     const contestName = req.query.contestName
-    console.log(contestName)
     const contestData = await Contests.findOne({
         contestName: contestName
     }).lean();

@@ -25,10 +25,8 @@ const InterviewBitScore = async username => {
       })
     )
     let data = await res.json()
-    // console.log(data)
-    console.log("Score : ",data.score);
   } catch (err) {
-    console.log(err)
+    console.error(err)
   }
 }
 
@@ -49,10 +47,8 @@ const InterviewBitPS = async username => {
       })
     )
     let data = await res.json()
-    // console.log(data)
-    console.log("Problems Solved",data.total_problems_solved)
   } catch (err) {
-    console.log(err)
+    console.error(err)
   }
 }
 

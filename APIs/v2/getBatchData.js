@@ -301,7 +301,6 @@ router.get('/yearBranch', async (req, res) => {
 router.get('/branch', async (req, res) => {
     try {
         const body = req.query;
-        console.log('body: ', body);
         let { branch } = body;
 
         const studentData = await Students.find({ branch: branch })
@@ -370,7 +369,6 @@ router.get('/branch', async (req, res) => {
 router.get('/year', async (req, res) => {
     try {
         const body = req.query;
-        console.log('body: ', body);
         let { year } = body;
         year = parseInt(year);
 

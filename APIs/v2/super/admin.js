@@ -9,7 +9,7 @@ require('dotenv').config();
 router.post('/vmRefresh',async (req, res) => {
     const {key} = req.body;
     if(key !== process.env.REFRESH_KEY){
-        console.log("Unauthorized access to refresh data from VM");
+        console.error("Unauthorized access to refresh data from VM");
         return res.status(401).json({ message: 'Unauthorized', error: true });
     }
     try {
@@ -132,8 +132,6 @@ router.post('/newStudent', async (req, res) => {
 router.post('/newStudents', async(req,res)=>{
     try{
         const {year, branch, students} = req.body;
-        console.log(year, branch)
-        console.log(students)
         const newStudents = [];
         for(let i=0;i<students.length;i++){
             const student = students[i];
@@ -141,7 +139,7 @@ router.post('/newStudents', async(req,res)=>{
             student.branch = branch;
             const existingStudent = await Students.findOne({ rollNo: student.rollNo });
             if (existingStudent) {
-                console.log(`Student ${student.rollNo} already exists, skipping.`);
+                console.error(`Student ${student.rollNo} already exists, skipping.`);
                 continue;
             }
             const newStudent = await createStudent(student);
@@ -581,7 +579,6 @@ router.post('/batchRefreshByBatch', async (req, res) => {
 // refresh a view {name} => {message}
 router.post('/refreshView',async(req,res)=>{
     const {name} = req.body;
-    // console.log('name: ', name);
     if(!name){
         return res.status(400).json({ error: true, message: 'Invalid view name' });
     }

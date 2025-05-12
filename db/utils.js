@@ -134,7 +134,7 @@ const fetchPlatformData = async (
   try {
     const data = await fetchFunction(student[platformKey].username)
     if (data.error) {
-      console.log(
+      console.error(
         `Error in fetching data for ${platform} ${student[platformKey].username} rollNo: ${student.rollNo}`
       )
       return { error: true, data: null }
@@ -366,7 +366,7 @@ const getDataOfStudent = async (rollNo, year, branch) => {
 
     const errorObject = student.isError
     if (Object.values(errorObject).some(val => val)) {
-      console.log('Error in fetching data for student: ', rollNo, errorObject)
+      console.error('Error in fetching data for student: ', rollNo, errorObject)
       return {
         error: true,
         message: 'Error in fetching data for student',
@@ -403,7 +403,7 @@ const updateStudentsByRollNumbers = async rollNumbers => {
     const students = await Students.find({ rollNo: { $in: rollNumbers } })
 
     if (students.length === 0) {
-      console.log('No students found for the provided roll numbers.')
+      console.error('No students found for the provided roll numbers.')
       return {
         error: true,
         message: 'No students found for the provided roll numbers.',

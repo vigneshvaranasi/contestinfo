@@ -33,7 +33,7 @@ const InterviewBitScore = async username => {
     // console.log("Score : ",data.score);
     return data.score
   } catch (err) {
-    console.log(err);
+    console.error(err);
     return -1;
   }
 }
@@ -62,7 +62,7 @@ const InterviewBitPS = async username => {
     // console.log(data)
     // console.log("Problems Solved",data.total_problems_solved)
   } catch (err) {
-    console.log(err);
+    console.error(err);
     return -1;
   }
 }
@@ -86,7 +86,7 @@ async function InterviewBitInfo(username){
     }
 
   }catch(err){
-    console.log(err)
+    console.error(err)
     return {
       error: "Failed to fetch data"
     }

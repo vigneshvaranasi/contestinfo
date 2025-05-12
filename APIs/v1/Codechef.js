@@ -29,8 +29,8 @@ const scrapeCodeChef = async (username) => {
         const allRatingIndex = html.indexOf('var all_rating =');
         const endPoint = html.indexOf(';',allRatingIndex);
         let jsonString = html.substring(allRatingIndex + 16, endPoint);
-        console.log(username)
-        console.log(jsonString)
+        // console.log(username)
+        // console.log(jsonString)
         let allRating = JSON.parse(jsonString);
         const $ = cheerio.load(html);
         // Total Problems Solved by the User
@@ -73,12 +73,12 @@ const scrapeCodeChef = async (username) => {
         newAllRating = newAllRating.filter((data) => data != null);
         return {newAllRating,username,problemsSolved};
     }catch(err){
-        console.log(err);
+        console.error(err);
     }
     
 };
 const scrapedData = await scrapeCodeChef('pavankc');
-console.log(scrapedData);
+// console.log(scrapedData);
 // Returns the all_rating object of the user
 const getAllRating= async(username)=>{
     try{
@@ -89,7 +89,7 @@ const getAllRating= async(username)=>{
         // console.log(text.substring(allRatingIndex+16,endPoint));
         return JSON.parse(text.substring(allRatingIndex+16,endPoint));
     }catch(err){
-        console.log(err);
+        console.error(err);
     }
 }
 // Returns the Data of Contests of the user 
@@ -118,7 +118,7 @@ const getDataofContests = async (username) => {
         });
         return contentData;
     }catch(err){
-        console.log(err);
+        console.error(err);
     }
 }
 

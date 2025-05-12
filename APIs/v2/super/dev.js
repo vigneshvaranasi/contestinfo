@@ -13,7 +13,6 @@ router.post('/newAdmin', async (req,res)=>{
     try{
         const body = await req.body;
         const {username, password, role} = body;
-        console.log('username, password, role: ', username, password, role);
 
         // verify username
         const existingUser = await Users.findOne({
