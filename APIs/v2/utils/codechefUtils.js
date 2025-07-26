@@ -38,7 +38,7 @@ const scrapeCodeChef = async (username) => {
         const $ = cheerio.load(html);
         const problemsString = $('section.rating-data-section.problems-solved > h3').text().trim();
         const parsedProblems = problemsString.split(' ');
-        const TotalProblemsSolved = parsedProblems[parsedProblems.length - 1];
+        let TotalProblemsSolved = parsedProblems[parsedProblems.length - 1] === "Solved:" ? "0" : parsedProblems[parsedProblems.length - 1];
         // console.log(TotalProblemsSolved); // Total Problems Solved
         const contentData = [];
         $('div.content').each((index, element) => {
@@ -123,6 +123,8 @@ const scrapeCodeChef = async (username) => {
             }
         })
 
+
+        // TotalProblemsSolved = TotalProblemsSolved == "Solved" ? "0" : TotalProblemsSolved;
         return { 
             PerformancesData: PerformancesData,
             ContestsData: participatedContests,
@@ -139,8 +141,8 @@ const scrapeCodeChef = async (username) => {
     }
 };
 
-// scrapeCodeChef('pavankc')
 // scrapeCodeChef('vvsvignesh')
+// scrapeCodeChef('vdhanush')
 // .then((data) => {
 //     console.log(data);
 // });
