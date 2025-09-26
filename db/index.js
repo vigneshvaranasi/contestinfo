@@ -253,6 +253,11 @@ const ActionSchema = new mongoose.Schema({
 })
 
 const UpcomingContestSchema = new mongoose.Schema({
+    id: {
+        type: Number,
+        required: true,
+        unique: true
+    },
     href: {
         type: String,
         required: true

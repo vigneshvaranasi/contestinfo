@@ -44,7 +44,7 @@ async function fetchUpcoming() {
         // console.log('data: ', data);
         let contests = data.objects;
         const finalData = contests.map(contest => {
-            const { id, n_problems, n_statistics, parsed_at, problems, ...filteredContest } = contest;
+            const { n_problems, n_statistics, parsed_at, problems, ...filteredContest } = contest;
             filteredContest.platform = getPlatform(filteredContest.resource);
             return filteredContest;
         });
@@ -62,9 +62,15 @@ const fetchUpcomingWithLimit = limiter.wrap(fetchUpcoming);
 GetUpcommingApp.get('/latest', async (req, res) => {
     try {
         const data = await fetchUpcomingWithLimit();
-        await UpcomingContest.insertMany(data);
+        const currentDate = new Date();
+        await UpcomingContest.deleteMany({ end: { $lt: currentDate } });
+        const existingIds = await UpcomingContest.find({}, 'id').then(contests => contests.map(c => c.id));
+        const newData = data.filter(contest => !existingIds.includes(contest.id));
+        if (newData.length > 0) {
+            await UpcomingContest.insertMany(newData);
+        }
         res.json({           
-            message: 'Fetched upcoming contests successfully',
+            message: `Fetched upcoming contests successfully`,
             data: data
         });
     } catch (error) {
